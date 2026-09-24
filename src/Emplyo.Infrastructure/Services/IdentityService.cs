@@ -1,0 +1,197 @@
+using Emplyo.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Emplyo.Infrastructure.Identity;
+using Emplyo.Infrastructure.Persistence;
+
+namespace Emplyo.Infrastructure.Services;
+
+public class IdentityService : IIdentityService
+{
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly AppDbContext _db;
+
+    public IdentityService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, AppDbContext db)
+    {
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _db = db;
+    }
+
+    public async Task<CreateUserResult> CreateUserAsync(string email, string displayName, string password,
+        IReadOnlyCollection<string> roles, int? employeeId, CancellationToken ct = default)
+    {
+        var existing = await _userManager.FindByEmailAsync(email);
+        if (existing is not null)
+            return new CreateUserResult { Succeeded = false, Errors = new[] { "A user with this email already exists." } };
+
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true,
+            DisplayName = displayName,
+            IsActive = true,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        var result = await _userManager.CreateAsync(user, password);
+        if (!result.Succeeded)
+            return new CreateUserResult { Succeeded = false, Errors = result.Errors.Select(e => e.Description).ToList() };
+
+        var assignResult = await _userManager.AddToRolesAsync(user, roles);
+        if (!assignResult.Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
+            return new CreateUserResult { Succeeded = false, Errors = assignResult.Errors.Select(e => e.Description).ToList() };
+        }
+
+        return new CreateUserResult { Succeeded = true, UserId = user.Id };
+    }
+
+    public async Task<AppUserInfo?> FindByEmailAsync(string email, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        return user is null ? null : await MapAsync(user);
+    }
+
+    public async Task<AppUserInfo?> FindByIdAsync(string userId, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        return user is null ? null : await MapAsync(user);
+    }
+
+    public async Task<IReadOnlyList<AppUserInfo>> SearchUsersAsync(string? query, CancellationToken ct = default)
+    {
+        var usersQuery = _userManager.Users.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var term = query.Trim();
+            usersQuery = usersQuery.Where(u => u.Email!.Contains(term) || u.DisplayName.Contains(term));
+        }
+
+        var users = await usersQuery.OrderBy(u => u.DisplayName).ToListAsync(ct);
+        var result = new List<AppUserInfo>(users.Count);
+        foreach (var user in users)
+        {
+            result.Add(await MapAsync(user));
+        }
+        return result;
+    }
+
+    public async Task<IReadOnlyList<AppUserInfo>> GetUsersInRoleAsync(string role, CancellationToken ct = default)
+    {
+        var users = await _userManager.GetUsersInRoleAsync(role);
+        var result = new List<AppUserInfo>(users.Count);
+        foreach (var user in users.Where(u => u.IsActive))
+        {
+            result.Add(await MapAsync(user));
+        }
+        return result;
+    }
+
+    public async Task SetRolesAsync(string userId, IReadOnlyCollection<string> roles, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return;
+
+        var current = await _userManager.GetRolesAsync(user);
+        var toRemove = current.Except(roles).ToList();
+        var toAdd = roles.Except(current).ToList();
+
+        if (toRemove.Count > 0) await _userManager.RemoveFromRolesAsync(user, toRemove);
+        if (toAdd.Count > 0) await _userManager.AddToRolesAsync(user, toAdd);
+    }
+
+    public async Task<IReadOnlyList<string>> GetRolesAsync(string userId, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        return user is null ? Array.Empty<string>() : (await _userManager.GetRolesAsync(user)).ToList();
+    }
+
+    public async Task<bool> ResetPasswordAsync(string userId, string newPassword, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return false;
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        return result.Succeeded;
+    }
+
+    public async Task SetActiveAsync(string userId, bool isActive, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return;
+
+        user.IsActive = isActive;
+        if (!isActive)
+        {
+            user.LockoutEnd = DateTimeOffset.MaxValue;
+        }
+        else
+        {
+            user.LockoutEnd = null;
+            user.LockoutEnabled = true;
+        }
+        await _userManager.UpdateAsync(user);
+    }
+
+    public async Task<bool> AddToRoleAsync(string userId, string role, CancellationToken ct = default)
+    {
+        if (!await _roleManager.RoleExistsAsync(role))
+            await _roleManager.CreateAsync(new IdentityRole(role));
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return false;
+        var result = await _userManager.AddToRoleAsync(user, role);
+        return result.Succeeded;
+    }
+
+    public Task<bool> HasAnyUserAsync(CancellationToken ct = default)
+        => _db.Users.AnyAsync(ct);
+
+    public async Task<string?> GeneratePasswordResetTokenAsync(string userId, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        return user is null ? null : await _userManager.GeneratePasswordResetTokenAsync(user);
+    }
+
+    public async Task<bool> ResetPasswordWithTokenAsync(string userId, string token, string newPassword, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return false;
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        return result.Succeeded;
+    }
+
+    public async Task RecordLoginAsync(string userId, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null) return;
+        user.LastLoginUtc = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+    }
+
+    private async Task<AppUserInfo> MapAsync(ApplicationUser user)
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        var employeeId = await _db.Employees.AsNoTracking()
+            .Where(e => e.UserId == user.Id)
+            .Select(e => (int?)e.Id)
+            .FirstOrDefaultAsync();
+
+        return new AppUserInfo
+        {
+            Id = user.Id,
+            Email = user.Email,
+            UserName = user.UserName,
+            DisplayName = user.DisplayName,
+            IsActive = user.IsActive && (user.LockoutEnd is null || user.LockoutEnd <= DateTimeOffset.UtcNow),
+            EmployeeId = employeeId,
+            LastLoginUtc = user.LastLoginUtc,
+            Roles = roles.ToList()
+        };
+    }
+}
