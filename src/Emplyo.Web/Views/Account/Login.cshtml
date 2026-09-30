@@ -1,0 +1,31 @@
+@model Emplyo.Web.Controllers.LoginViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Sign in";
+    ViewData["Heading"] = "Welcome back";
+    ViewData["Subheading"] = "Sign in to your Emplyo account";
+}
+<form asp-action="Login" method="post" novalidate>
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="field mb-3">
+        <label asp-for="Email">Email address</label>
+        <input asp-for="Email" class="form-control" type="email" autocomplete="username" autofocus placeholder="you@company.com" />
+        <span asp-validation-for="Email" class="validation"></span>
+    </div>
+
+    <div class="field mb-2">
+        <label asp-for="Password">Password</label>
+        <input asp-for="Password" class="form-control" type="password" autocomplete="current-password" placeholder="••••••••••••" />
+        <span asp-validation-for="Password" class="validation"></span>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <label class="checkbox mb-0"><input asp-for="RememberMe" type="checkbox" /> <span>Remember me</span></label>
+        <a asp-action="ForgotPassword" class="small">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 justify-content-center">Sign in</button>
+</form>
+<p class="text-center text-muted small mt-3 mb-0">Access is provisioned by your administrator.</p>

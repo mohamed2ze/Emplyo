@@ -1,0 +1,21 @@
+@model Emplyo.Web.Controllers.ContactInfoViewModel
+<div class="page-head"><div class="page-head__text"><nav class="breadcrumb"><a asp-action="Index">My profile</a><span>/</span>Update</nav><h1>Update my information</h1><p>You can maintain your contact details and emergency contact information.</p></div></div>
+<form asp-action="EditContact" method="post">
+    <div class="card"><div class="card__body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <div class="form-grid">
+            <div class="field"><label asp-for="PhoneNumber">Phone number</label><input asp-for="PhoneNumber" class="form-control" /><span asp-validation-for="PhoneNumber" class="validation"></span></div>
+            <div class="field"><label asp-for="AddressLine">Address</label><input asp-for="AddressLine" class="form-control" /></div>
+            <div class="field"><label asp-for="City">City</label><input asp-for="City" class="form-control" /></div>
+            <div class="field"><label asp-for="Country">Country</label><input asp-for="Country" class="form-control" /></div>
+            <div class="field"><label asp-for="EmergencyContactName">Emergency contact name</label><input asp-for="EmergencyContactName" class="form-control" /></div>
+            <div class="field"><label asp-for="EmergencyContactPhone">Emergency contact phone</label><input asp-for="EmergencyContactPhone" class="form-control" /></div>
+        </div>
+    </div>
+    <div class="card__head" style="border:none">
+        <a class="btn btn-secondary" asp-action="Index">Cancel</a><span class="spacer"></span>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save changes</button>
+    </div>
+    </div>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

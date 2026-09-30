@@ -1,0 +1,56 @@
+@model EmployeeDetailDto
+<div class="page-head">
+    <div class="page-head__text"><h1>My profile</h1><p>Your personal and employment information.</p></div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-action="EditContact"><i class="bi bi-pencil"></i> Update my information</a>
+        <a class="btn btn-secondary" asp-action="ChangePassword"><i class="bi bi-key"></i> Change password</a>
+    </div>
+</div>
+
+<div class="grid-3" style="grid-template-columns: 320px 1fr">
+    <div class="card">
+        <div class="card__body text-center">
+            <span class="avatar lg mb-3" style="margin:0 auto">
+                @if (!string.IsNullOrEmpty(Model.ProfilePhotoPath))
+                {
+                    <img src="@Url.Action("Photo", "Employees", new { id = Model.Id })" alt="" />
+                }
+                else { @Ui.Initials(Model.FullName) }
+            </span>
+            <h3 class="h5 mb-1">@Model.FullName</h3>
+            <p class="text-muted mb-2">@Model.EmployeeNumber</p>
+            @Html.Raw(Ui.EmploymentStatusBadge(Model.EmploymentStatus))
+            <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data" class="mt-3">
+                <input type="file" name="photo" accept=".jpg,.jpeg,.png,.webp" class="form-control form-control-sm mb-2" />
+                <button class="btn btn-secondary btn-sm w-100 justify-content-center" type="submit"><i class="bi bi-upload"></i> Change photo</button>
+            </form>
+        </div>
+    </div>
+    <div>
+        <div class="card">
+            <div class="card__head"><h3>Employment</h3></div>
+            <div class="card__body">
+                <dl class="dl">
+                    <dt>Department</dt><dd>@(Model.DepartmentName ?? "—")</dd>
+                    <dt>Position</dt><dd>@(Model.PositionTitle ?? "—")</dd>
+                    <dt>Manager</dt><dd>@(Model.ManagerName ?? "—")</dd>
+                    <dt>Employment type</dt><dd>@Ui.EmploymentTypeLabel(Model.EmploymentType)</dd>
+                    <dt>Hire date</dt><dd>@Model.HireDate.ToString("dd MMM yyyy")</dd>
+                    <dt>Work location</dt><dd>@(Model.WorkLocation ?? "—")</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card__head"><h3>Contact</h3></div>
+            <div class="card__body">
+                <dl class="dl">
+                    <dt>Work email</dt><dd>@Model.WorkEmail</dd>
+                    <dt>Phone</dt><dd>@(Model.PhoneNumber ?? "—")</dd>
+                    <dt>Address</dt><dd>@(string.IsNullOrWhiteSpace(Model.AddressLine) ? "—" : $"{Model.AddressLine}, {Model.City}, {Model.Country}".Trim(',', ' '))</dd>
+                    <dt>Emergency contact</dt><dd>@(Model.EmergencyContactName ?? "—") @(Model.EmergencyContactPhone is not null ? $"· {Model.EmergencyContactPhone}" : "")</dd>
+                </dl>
+                <p class="hint mb-0">Employment information and work email are maintained by HR. Contact details can be updated by you.</p>
+            </div>
+        </div>
+    </div>
+</div>
