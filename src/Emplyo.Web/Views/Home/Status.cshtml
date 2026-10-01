@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Error";
+    var code = ViewData["Code"] as int? ?? (Context.Request.Query["code"].ToString() is { Length: > 0 } c && int.TryParse(c, out var parsed) ? parsed : 500);
+    var title = ViewData["Title"] as string;
+    var message = ViewData["Message"] as string;
+    var heading = code switch
+    {
+        400 => "Bad request",
+        401 => "Authentication required",
+        403 => "Access denied",
+        404 => "Page not found",
+        500 => "Something went wrong",
+        _ => "Unexpected status"
+    };
+    var detail = message ?? code switch
+    {
+        400 => "The request could not be processed as submitted.",
+        401 => "Please sign in to continue.",
+        403 => "You do not have permission to view this resource.",
+        404 => "The page or record you are looking for does not exist.",
+        500 => "An unexpected error occurred while processing your request.",
+        _ => "The request could not be completed."
+    };
+}
+<div class="error-page" style="min-height:60vh">
+    <div>
+        <div class="code">@code</div>
+        <h1 class="h3 mt-3">@heading</h1>
+        <p class="text-muted">@detail</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+            <a class="btn btn-primary" asp-controller="Home" asp-action="Index"><i class="bi bi-house"></i> Dashboard</a>
+            <a class="btn btn-secondary" href="javascript:history.back()"><i class="bi bi-arrow-left"></i> Go back</a>
+        </div>
+    </div>
+</div>

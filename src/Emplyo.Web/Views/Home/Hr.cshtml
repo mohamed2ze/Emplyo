@@ -1,0 +1,98 @@
+@model HrDashboardDto
+@{
+    var chartLabels = Model.HeadcountByDepartment.Select(d => d.DepartmentName).ToList();
+    var chartValues = Model.HeadcountByDepartment.Select(d => d.TotalCount).ToList();
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <h1>HR dashboard</h1>
+        <p>Headcount, attendance and people operations at a glance.</p>
+    </div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-controller="Leave" asp-action="Index" asp-route-status="Pending"><i class="bi bi-calendar2-check"></i> Leave queue</a>
+        <a class="btn btn-primary" asp-controller="Employees" asp-action="Create"><i class="bi bi-person-plus"></i> Add employee</a>
+    </div>
+</div>
+
+<div class="stat-grid mb-4">
+    <div class="stat"><div class="stat__icon"><i class="bi bi-people"></i></div><div><div class="stat__value">@Model.Headcount</div><div class="stat__label">Headcount</div></div></div>
+    <div class="stat"><div class="stat__icon green"><i class="bi bi-person-check"></i></div><div><div class="stat__value">@Model.ActiveEmployees</div><div class="stat__label">Active</div></div></div>
+    <div class="stat"><div class="stat__icon red"><i class="bi bi-hourglass-split"></i></div><div><div class="stat__value">@Model.PendingLeaveRequests</div><div class="stat__label">Pending leave</div></div></div>
+    <div class="stat"><div class="stat__icon teal"><i class="bi bi-person-plus"></i></div><div><div class="stat__value">@Model.NewHiresThisMonth</div><div class="stat__label">Hires this month</div></div></div>
+    <div class="stat"><div class="stat__icon slate"><i class="bi bi-clipboard-check"></i></div><div><div class="stat__value">@Model.OnboardingInProgress</div><div class="stat__label">In onboarding</div></div></div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>Department distribution</h3></div>
+        <div class="card__body">
+            @if (Model.HeadcountByDepartment.Any())
+            {
+                <div class="chart-box"><canvas data-chart="bar" data-chart-labels="@System.Text.Json.JsonSerializer.Serialize(chartLabels)" data-chart-values="@System.Text.Json.JsonSerializer.Serialize(chartValues)"></canvas></div>
+            }
+            else { <div class="empty"><i class="bi bi-diagram-3"></i><p class="mb-0">No departments yet.</p></div> }
+        </div>
+    </div>
+    <div class="card">
+        <div class="card__head"><h3>Attendance today</h3></div>
+        <div class="card__body">
+            <div class="stat-grid">
+                <div class="stat"><div class="stat__icon green"><i class="bi bi-check2-circle"></i></div><div><div class="stat__value">@Model.PresentToday</div><div class="stat__label">Present</div></div></div>
+                <div class="stat"><div class="stat__icon amber"><i class="bi bi-clock"></i></div><div><div class="stat__value">@Model.LateToday</div><div class="stat__label">Late</div></div></div>
+                <div class="stat"><div class="stat__icon red"><i class="bi bi-x-circle"></i></div><div><div class="stat__value">@Model.AbsentToday</div><div class="stat__label">Absent</div></div></div>
+            </div>
+            <a class="btn btn-secondary btn-sm mt-3" asp-controller="Attendance" asp-action="Index"><i class="bi bi-clock-history"></i> Attendance records</a>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>Recent hires</h3><span class="spacer"></span><a asp-controller="Employees" asp-action="Index" class="small">View all</a></div>
+        <div class="card__body p-0">
+            @if (Model.RecentHires.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Employee</th><th>Position</th><th>Hired</th></tr></thead>
+                        <tbody>
+                        @foreach (var h in Model.RecentHires)
+                        {
+                            <tr>
+                                <td><a class="row-link" asp-controller="Employees" asp-action="Details" asp-route-id="@h.EmployeeId">@h.EmployeeName</a></td>
+                                <td>@(h.PositionTitle ?? "—")</td>
+                                <td>@h.HireDate.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-person-plus"></i><p class="mb-0">No hires recorded yet.</p></div> }
+        </div>
+    </div>
+    <div class="card">
+        <div class="card__head"><h3>Upcoming milestones</h3></div>
+        <div class="card__body p-0">
+            @if (Model.UpcomingMilestones.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Employee</th><th>Milestone</th><th>Date</th></tr></thead>
+                        <tbody>
+                        @foreach (var m in Model.UpcomingMilestones)
+                        {
+                            <tr>
+                                <td><a class="row-link" asp-controller="Employees" asp-action="Details" asp-route-id="@m.EmployeeId">@m.EmployeeName</a></td>
+                                <td>@m.Years-year @m.MilestoneType</td>
+                                <td>@m.Date.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-balloon"></i><p class="mb-0">No milestones in the next 45 days.</p></div> }
+        </div>
+    </div>
+</div>

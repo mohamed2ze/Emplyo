@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "No employee profile";
+}
+<div class="card">
+    <div class="card__body">
+        <div class="empty">
+            <i class="bi bi-person-x"></i>
+            <h4>No employee profile linked</h4>
+            <p>Your user account is not linked to an employee record. An administrator can link your account from User management.</p>
+            @if (User.IsInRole("Administrator"))
+            {
+                <a class="btn btn-primary" asp-controller="Users" asp-action="Index">Go to user management</a>
+            }
+        </div>
+    </div>
+</div>

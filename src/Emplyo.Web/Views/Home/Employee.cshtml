@@ -1,0 +1,150 @@
+@model EmployeeDashboardDto
+@{
+    var today = Model.Today;
+    var balanceTotal = Model.LeaveBalances.Where(b => b.Entitlement > 0).Sum(b => b.Remaining);
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <h1>Welcome, @Model.EmployeeName.Split(' ').First()</h1>
+        <p>@Model.PositionTitle · @Model.DepartmentName · Employee #@Model.EmployeeNumber</p>
+    </div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-controller="Leave" asp-action="Create"><i class="bi bi-calendar-plus"></i> Request leave</a>
+        @if (today is not null)
+        {
+            if (today.CanClockIn)
+            {
+                <button class="btn btn-primary" data-clock-action="ClockIn"><i class="bi bi-box-arrow-in-right"></i> Clock in</button>
+            }
+            else if (today.CanClockOut)
+            {
+                <button class="btn btn-success" data-clock-action="ClockOut"><i class="bi bi-box-arrow-right"></i> Clock out</button>
+            }
+        }
+    </div>
+</div>
+
+<div class="stat-grid mb-4">
+    <div class="stat"><div class="stat__icon"><i class="bi bi-person-badge"></i></div><div><div class="stat__value" style="font-size:1rem;padding-top:.35rem">@Html.Raw(Ui.EmploymentStatusBadge(Model.EmploymentStatus))</div><div class="stat__label">Employment status</div></div></div>
+    <div class="stat"><div class="stat__icon teal"><i class="bi bi-calendar2-check"></i></div><div><div class="stat__value">@balanceTotal.ToString("0.#")</div><div class="stat__label">Leave days remaining</div></div></div>
+    <div class="stat"><div class="stat__icon green"><i class="bi bi-clock"></i></div><div><div class="stat__value">@(today?.ClockInUtc is not null ? Tz.ToLocal(today.ClockInUtc.Value).ToString("HH:mm") : "—")</div><div class="stat__label">Today's clock-in</div></div></div>
+    <div class="stat"><div class="stat__icon slate"><i class="bi bi-calendar-event"></i></div><div><div class="stat__value">@Model.HireDate.ToString("dd MMM yyyy")</div><div class="stat__label">Hire date</div></div></div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>My leave balances</h3><span class="spacer"></span><a asp-controller="Leave" asp-action="My" class="small">My leave</a></div>
+        <div class="card__body p-0">
+            @if (Model.LeaveBalances.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Leave type</th><th class="num">Entitled</th><th class="num">Used</th><th class="num">Remaining</th></tr></thead>
+                        <tbody>
+                        @foreach (var b in Model.LeaveBalances)
+                        {
+                            <tr>
+                                <td>@b.LeaveTypeName</td>
+                                <td class="num">@b.Entitlement.ToString("0.#")</td>
+                                <td class="num">@b.Used.ToString("0.#")</td>
+                                <td class="num"><strong>@b.Remaining.ToString("0.#")</strong></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-calendar2-check"></i><p class="mb-0">No leave balances are configured for this year.</p></div> }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__head"><h3>Recent attendance</h3><span class="spacer"></span><a asp-controller="Attendance" asp-action="My" class="small">View all</a></div>
+        <div class="card__body p-0">
+            @if (Model.RecentAttendance.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var a in Model.RecentAttendance.Take(6))
+                        {
+                            <tr>
+                                <td>@a.WorkDate.ToString("dd MMM")</td>
+                                <td>@(a.ClockInUtc.HasValue ? Tz.ToLocal(a.ClockInUtc.Value).ToString("HH:mm") : "—")</td>
+                                <td>@(a.ClockOutUtc.HasValue ? Tz.ToLocal(a.ClockOutUtc.Value).ToString("HH:mm") : "—")</td>
+                                <td>@Html.Raw(Ui.AttendanceStatusBadge(a.Status))</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-clock-history"></i><p class="mb-0">No attendance recorded yet.</p></div> }
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>My leave requests</h3><span class="spacer"></span><a asp-controller="Leave" asp-action="Create" class="small">New request</a></div>
+        <div class="card__body p-0">
+            @if (Model.RecentLeaveRequests.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Type</th><th>Dates</th><th class="num">Days</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var l in Model.RecentLeaveRequests)
+                        {
+                            <tr>
+                                <td><a class="row-link" asp-controller="Leave" asp-action="Details" asp-route-id="@l.Id">@l.LeaveTypeName</a></td>
+                                <td>@l.StartDate.ToString("dd MMM") – @l.EndDate.ToString("dd MMM")</td>
+                                <td class="num">@l.TotalDays.ToString("0.#")</td>
+                                <td>@Html.Raw(Ui.LeaveStatusBadge(l.Status))</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-calendar2-check"></i><p class="mb-0">You have no leave requests yet.</p><a class="btn btn-primary btn-sm" asp-controller="Leave" asp-action="Create">Request leave</a></div> }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__head"><h3>Announcements</h3><span class="spacer"></span><a asp-controller="Announcements" asp-action="Index" class="small">View all</a></div>
+        <div class="card__body">
+            @if (Model.Announcements.Any())
+            {
+                foreach (var a in Model.Announcements)
+                {
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <a class="row-link" asp-controller="Announcements" asp-action="Details" asp-route-id="@a.Id">@a.Title</a>
+                            <span class="text-muted small text-nowrap">@Tz.ToLocal(a.PublishAtUtc ?? a.CreatedAtUtc).ToString("dd MMM")</span>
+                        </div>
+                        <div class="text-muted small">Posted by @a.CreatedByName</div>
+                    </div>
+                }
+            }
+            else { <div class="empty"><i class="bi bi-megaphone"></i><p class="mb-0">No announcements right now.</p></div> }
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Upcoming holidays</h3></div>
+    <div class="card__body">
+        @if (Model.UpcomingHolidays.Any())
+        {
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var h in Model.UpcomingHolidays)
+                {
+                    <div class="badge-soft d-flex align-items-center gap-2"><i class="bi bi-calendar-event"></i>@h.Name · @h.Date.ToString("dd MMM yyyy")</div>
+                }
+            </div>
+        }
+        else { <p class="text-muted mb-0">No upcoming holidays configured.</p> }
+    </div>
+</div>
