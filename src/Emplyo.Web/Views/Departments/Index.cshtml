@@ -1,0 +1,71 @@
+@model PagedResult<DepartmentListItemDto>
+@{
+    var search = ViewBag.Search as string;
+    var active = ViewBag.Active as bool?;
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <h1>Departments</h1>
+        <p>@Model.TotalCount department(s) across the organization.</p>
+    </div>
+    <div class="page-head__actions">
+        <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Add department</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__body">
+        <form method="get" asp-action="Index" class="toolbar">
+            <div class="field grow">
+                <label for="search">Search</label>
+                <input id="search" name="search" value="@search" class="form-control" placeholder="Department name" />
+            </div>
+            <div class="field">
+                <label for="active">Status</label>
+                <select id="active" name="active" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    <option value="true" selected="@(active == true)">Active</option>
+                    <option value="false" selected="@(active == false)">Inactive</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
+            <a class="btn btn-ghost" asp-action="Index">Clear</a>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__body p-0">
+        @if (Model.Items.Any())
+        {
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>Department</th><th>Head</th><th class="num">Employees</th><th class="num">Positions</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                    @foreach (var d in Model.Items)
+                    {
+                        <tr>
+                            <td><a class="row-link" asp-action="Details" asp-route-id="@d.Id">@d.Name</a><div class="person__meta">@d.Description</div></td>
+                            <td>@(d.DepartmentHeadName ?? "—")</td>
+                            <td class="num">@d.EmployeeCount</td>
+                            <td class="num">@d.PositionCount</td>
+                            <td>@Html.Raw(Ui.ActiveBadge(d.IsActive))</td>
+                            <td>
+                                <div class="table-actions">
+                                    <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@d.Id"><i class="bi bi-eye"></i></a>
+                                    <a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@d.Id"><i class="bi bi-pencil"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+        }
+        else
+        {
+            <div class="empty"><i class="bi bi-diagram-3"></i><h4>No departments yet</h4><p>Create your first department to organize your workforce.</p><a class="btn btn-primary" asp-action="Create">Add department</a></div>
+        }
+    </div>
+</div>

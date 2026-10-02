@@ -1,0 +1,64 @@
+@using Emplyo.Application.Organization
+@model PagedResult<PositionListItemDto>
+@{
+    var search = ViewBag.Search as string;
+    var departmentId = ViewBag.DepartmentId as int?;
+    var active = ViewBag.Active as bool?;
+    var departments = ViewBag.Departments as IReadOnlyList<LookupItemDto> ?? new List<LookupItemDto>();
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>Positions</h1><p>@Model.TotalCount position(s) defined.</p></div>
+    <div class="page-head__actions"><a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Add position</a></div>
+</div>
+
+<div class="card">
+    <div class="card__body">
+        <form method="get" asp-action="Index" class="toolbar">
+            <div class="field grow"><label for="search">Search</label><input id="search" name="search" value="@search" class="form-control" placeholder="Position title" /></div>
+            <div class="field">
+                <label for="departmentId">Department</label>
+                <select id="departmentId" name="departmentId" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    @foreach (var d in departments) { <option value="@d.Id" selected="@(departmentId == d.Id)">@d.Name</option> }
+                </select>
+            </div>
+            <div class="field">
+                <label for="active">Status</label>
+                <select id="active" name="active" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    <option value="true" selected="@(active == true)">Active</option>
+                    <option value="false" selected="@(active == false)">Inactive</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
+            <a class="btn btn-ghost" asp-action="Index">Clear</a>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__body p-0">
+        @if (Model.Items.Any())
+        {
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>Title</th><th>Department</th><th class="num">Employees</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                    @foreach (var p in Model.Items)
+                    {
+                        <tr>
+                            <td><span class="fw-semibold">@p.Title</span><div class="person__meta">@p.Description</div></td>
+                            <td>@(p.DepartmentName ?? "—")</td>
+                            <td class="num">@p.EmployeeCount</td>
+                            <td>@Html.Raw(Ui.ActiveBadge(p.IsActive))</td>
+                            <td><div class="table-actions"><a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@p.Id"><i class="bi bi-pencil"></i></a></div></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+        }
+        else { <div class="empty"><i class="bi bi-briefcase"></i><h4>No positions yet</h4><p>Define positions to assign to employees.</p><a class="btn btn-primary" asp-action="Create">Add position</a></div> }
+    </div>
+</div>

@@ -1,0 +1,72 @@
+@model DepartmentDetailDto
+@{
+    ViewData["Title"] = Model.Name;
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="Index">Departments</a><span>/</span>@Model.Name</nav>
+        <h1>@Model.Name</h1>
+        <p>@(Model.Description ?? "No description")</p>
+    </div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+</div>
+
+<div class="stat-grid mb-4">
+    <div class="stat"><div class="stat__icon"><i class="bi bi-people"></i></div><div><div class="stat__value">@Model.EmployeeCount</div><div class="stat__label">Employees</div></div></div>
+    <div class="stat"><div class="stat__icon teal"><i class="bi bi-briefcase"></i></div><div><div class="stat__value">@Model.Positions.Count</div><div class="stat__label">Positions</div></div></div>
+    <div class="stat"><div class="stat__icon slate"><i class="bi bi-person-badge"></i></div><div><div class="stat__value" style="font-size:1rem;padding-top:.35rem">@(Model.DepartmentHeadName ?? "—")</div><div class="stat__label">Department head</div></div></div>
+    <div class="stat"><div class="stat__icon @(Model.IsActive ? "green" : "red")"><i class="bi bi-toggle-on"></i></div><div><div class="stat__value" style="font-size:1rem;padding-top:.35rem">@Html.Raw(Ui.ActiveBadge(Model.IsActive))</div><div class="stat__label">Status</div></div></div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>Employees</h3></div>
+        <div class="card__body p-0">
+            @if (Model.Employees.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Employee</th><th>Position</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var e in Model.Employees)
+                        {
+                            <tr>
+                                <td><a class="row-link" asp-controller="Employees" asp-action="Details" asp-route-id="@e.Id">@e.FullName</a></td>
+                                <td>@(e.PositionTitle ?? "—")</td>
+                                <td>@Html.Raw(Ui.EmploymentStatusBadge(e.Status))</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-people"></i><p class="mb-0">No employees assigned to this department.</p></div> }
+        </div>
+    </div>
+    <div class="card">
+        <div class="card__head"><h3>Positions</h3></div>
+        <div class="card__body p-0">
+            @if (Model.Positions.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Title</th><th class="num">Employees</th><th>Status</th></tr></thead>
+                        <tbody>
+                        @foreach (var p in Model.Positions)
+                        {
+                            <tr>
+                                <td>@p.Title</td>
+                                <td class="num">@p.EmployeeCount</td>
+                                <td>@Html.Raw(Ui.ActiveBadge(p.IsActive))</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-briefcase"></i><p class="mb-0">No positions defined for this department.</p></div> }
+        </div>
+    </div>
+</div>

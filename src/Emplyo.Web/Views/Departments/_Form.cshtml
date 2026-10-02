@@ -1,0 +1,30 @@
+@using Emplyo.Application.Employees
+@model DepartmentFormViewModel
+@{
+    var employees = ViewBag.Employees as IReadOnlyList<ManagerOptionDto> ?? new List<ManagerOptionDto>();
+}
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<div class="form-grid">
+    <div class="field">
+        <label asp-for="Form.Name">Name <span class="req">*</span></label>
+        <input asp-for="Form.Name" class="form-control" />
+        <span asp-validation-for="Form.Name" class="validation"></span>
+    </div>
+    <div class="field">
+        <label asp-for="Form.DepartmentHeadId">Department head</label>
+        <select asp-for="Form.DepartmentHeadId" class="form-select">
+            <option value="">— None —</option>
+            @foreach (var e in employees)
+            {
+                <option value="@e.Id" selected="@(Model.Form.DepartmentHeadId == e.Id)">@e.FullName (@e.EmployeeNumber)</option>
+            }
+        </select>
+    </div>
+    <div class="field span-2">
+        <label asp-for="Form.Description">Description</label>
+        <textarea asp-for="Form.Description" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="field">
+        <label class="checkbox"><input asp-for="Form.IsActive" type="checkbox" /> <span>Active</span></label>
+    </div>
+</div>

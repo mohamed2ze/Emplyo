@@ -1,0 +1,144 @@
+@model PagedResult<EmployeeListItemDto>
+@{
+    var filter = ViewBag.Filter as EmployeeFilter ?? new EmployeeFilter();
+    var departments = ViewBag.Departments as IReadOnlyList<LookupItemDto> ?? new List<LookupItemDto>();
+    var positions = ViewBag.Positions as IReadOnlyList<LookupItemDto> ?? new List<LookupItemDto>();
+    Func<string, string, Dictionary<string, string?>> sortValues = (col, dir) => new Dictionary<string, string?>
+    {
+        ["Search"] = filter.Search,
+        ["DepartmentId"] = filter.DepartmentId?.ToString(),
+        ["PositionId"] = filter.PositionId?.ToString(),
+        ["Status"] = filter.Status?.ToString(),
+        ["EmploymentType"] = filter.EmploymentType?.ToString(),
+        ["SortBy"] = col,
+        ["SortDir"] = dir
+    };
+    string SortIcon(string col)
+    {
+        if (!string.Equals(filter.SortBy, col, StringComparison.OrdinalIgnoreCase)) return "bi-arrow-down-up text-muted";
+        return string.Equals(filter.SortDir, "desc", StringComparison.OrdinalIgnoreCase) ? "bi-sort-down" : "bi-sort-up";
+    }
+    var sortByName = sortValues("name", "asc");
+    var sortByStatus = sortValues("status", "asc");
+    var sortByHire = sortValues("hiredate", "desc");
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <h1>Employees</h1>
+        <p>@Model.TotalCount employee record(s) in the directory.</p>
+    </div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-action="Index" asp-route-Status="Terminated"><i class="bi bi-archive"></i> Terminated</a>
+        <a class="btn btn-primary" asp-action="Create"><i class="bi bi-person-plus"></i> Add employee</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__body">
+        <form method="get" asp-action="Index" class="toolbar">
+            <div class="field grow">
+                <label for="Search">Search</label>
+                <input id="Search" name="Search" value="@filter.Search" class="form-control" placeholder="Name, number or email" />
+            </div>
+            <div class="field">
+                <label for="DepartmentId">Department</label>
+                <select id="DepartmentId" name="DepartmentId" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    @foreach (var d in departments)
+                    {
+                        <option value="@d.Id" selected="@(filter.DepartmentId == d.Id)">@d.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label for="Status">Status</label>
+                <select id="Status" name="Status" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    @foreach (var s in Enum.GetValues<EmploymentStatus>())
+                    {
+                        <option value="@s" selected="@(filter.Status == s)">@Ui.Humanize(s)</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label for="EmploymentType">Type</label>
+                <select id="EmploymentType" name="EmploymentType" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    @foreach (var t in Enum.GetValues<EmploymentType>())
+                    {
+                        <option value="@t" selected="@(filter.EmploymentType == t)">@Ui.EmploymentTypeLabel(t)</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+            <a class="btn btn-ghost" asp-action="Index">Clear</a>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__body p-0">
+        @if (Model.Items.Any())
+        {
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th><a asp-action="Index" asp-all-route-data="sortByName" class="text-decoration-none">Employee <i class="bi @SortIcon("name")"></i></a></th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th><a asp-action="Index" asp-all-route-data="sortByStatus" class="text-decoration-none">Status <i class="bi @SortIcon("status")"></i></a></th>
+                            <th><a asp-action="Index" asp-all-route-data="sortByHire" class="text-decoration-none">Hired <i class="bi @SortIcon("hiredate")"></i></a></th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="person">
+                                        <span class="avatar">
+                                            @if (!string.IsNullOrEmpty(e.ProfilePhotoPath))
+                                            {
+                                                <img src="@Url.Action("Photo", new { id = e.Id })" alt="" />
+                                            }
+                                            else
+                                            {
+                                                @e.Initials
+                                            }
+                                        </span>
+                                        <div>
+                                            <a class="row-link" asp-action="Details" asp-route-id="@e.Id">@e.FullName</a>
+                                            <div class="person__meta">@e.EmployeeNumber · @e.WorkEmail</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@(e.DepartmentName ?? "—")</td>
+                                <td>@(e.PositionTitle ?? "—")</td>
+                                <td>@Html.Raw(Ui.EmploymentStatusBadge(e.Status))</td>
+                                <td>@e.HireDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@e.Id" aria-label="View @e.FullName"><i class="bi bi-eye"></i></a>
+                                        <a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@e.Id" aria-label="Edit @e.FullName"><i class="bi bi-pencil"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+        }
+        else
+        {
+            <div class="empty">
+                <i class="bi bi-people"></i>
+                <h4>No employees found</h4>
+                <p>Try adjusting your search or filters, or add your first employee.</p>
+                <a class="btn btn-primary" asp-action="Create"><i class="bi bi-person-plus"></i> Add employee</a>
+            </div>
+        }
+    </div>
+</div>
