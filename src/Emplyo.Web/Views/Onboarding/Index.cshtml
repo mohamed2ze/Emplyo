@@ -1,0 +1,38 @@
+@model PagedResult<OnboardingOverviewDto>
+@{ var search = ViewBag.Search as string; }
+<div class="page-head">
+    <div class="page-head__text"><h1>Onboarding</h1><p>@Model.TotalCount employee(s) with onboarding checklists.</p></div>
+</div>
+<div class="card"><div class="card__body">
+    <form method="get" asp-action="Index" class="toolbar">
+        <div class="field grow"><label for="search">Search</label><input id="search" name="search" value="@search" class="form-control" placeholder="Name or number" /></div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
+        <a class="btn btn-ghost" asp-action="Index">Clear</a>
+    </form>
+</div></div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Items.Any())
+    {
+        <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>Employee</th><th>Position</th><th>Hire date</th><th>Progress</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            @foreach (var o in Model.Items)
+            {
+                <tr>
+                    <td><a class="row-link" asp-action="Details" asp-route-id="@o.EmployeeId">@o.EmployeeName</a><div class="person__meta">@o.EmployeeNumber · @(o.DepartmentName ?? "—")</div></td>
+                    <td>@(o.PositionTitle ?? "—")</td>
+                    <td>@o.HireDate.ToString("dd MMM yyyy")</td>
+                    <td style="min-width:160px">
+                        <div class="progress mb-1"><span style="width:@o.ProgressPercent%"></span></div>
+                        <span class="text-muted small">@o.CompletedTasks / @o.TotalTasks tasks (@o.ProgressPercent%)</span>
+                    </td>
+                    <td>@Html.Raw(Ui.EmploymentStatusBadge(o.EmploymentStatus))</td>
+                    <td><div class="table-actions"><a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@o.EmployeeId"><i class="bi bi-list-check"></i> Checklist</a></div></td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+        <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+    }
+    else { <div class="empty"><i class="bi bi-person-plus"></i><h4>No onboarding in progress</h4><p>Open an employee record and apply the onboarding checklist to begin.</p><a class="btn btn-primary" asp-controller="Employees" asp-action="Index">Go to employees</a></div> }
+</div></div>

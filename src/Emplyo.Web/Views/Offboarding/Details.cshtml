@@ -1,0 +1,83 @@
+@model OffboardingDetailDto
+@{
+    var completed = Model.Tasks.Count(t => t.Status == TaskItemStatus.Completed);
+    var percent = Model.Tasks.Count == 0 ? 0 : (int)Math.Round(completed * 100.0 / Model.Tasks.Count);
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="Index">Offboarding</a><span>/</span>@Model.EmployeeName</nav>
+        <h1>Offboarding · @Model.EmployeeName</h1>
+        <p>Departure date @Model.DepartureDate.ToString("dd MMM yyyy") · @Html.Raw(Ui.OffboardingStatusBadge(Model.Status))</p>
+    </div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-controller="Employees" asp-action="Details" asp-route-id="@Model.EmployeeId"><i class="bi bi-person"></i> Employee profile</a>
+        @if (Model.Status != OffboardingStatus.Completed)
+        {
+            <form asp-action="Complete" asp-route-id="@Model.CaseId" method="post" data-confirm="Complete offboarding? The employee will be marked as terminated.">
+                <button class="btn btn-danger" type="submit"><i class="bi bi-flag"></i> Complete offboarding</button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>Progress</h3></div>
+        <div class="card__body">
+            <div class="progress mb-2"><span style="width:@percent%"></span></div>
+            <span class="text-muted">@completed of @Model.Tasks.Count tasks completed (@percent%)</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card__head"><h3>Case information</h3></div>
+        <div class="card__body">
+            <dl class="dl">
+                <dt>Departure date</dt><dd>@Model.DepartureDate.ToString("dd MMM yyyy")</dd>
+                <dt>Reason</dt><dd>@(string.IsNullOrWhiteSpace(Model.Reason) ? "—" : Model.Reason)</dd>
+                <dt>Initiated</dt><dd>@Tz.ToLocal(Model.InitiatedAtUtc).ToString("dd MMM yyyy HH:mm")</dd>
+                @if (Model.CompletedAtUtc.HasValue) { <dt>Completed</dt><dd>@Tz.ToLocal(Model.CompletedAtUtc.Value).ToString("dd MMM yyyy HH:mm")</dd> }
+            </dl>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Offboarding tasks</h3></div>
+    <div class="card__body p-0">
+        @if (Model.Tasks.Any())
+        {
+            <div class="table-wrap"><table class="data-table">
+                <thead><tr><th>Task</th><th>Due</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                @foreach (var t in Model.Tasks)
+                {
+                    <tr>
+                        <td><span class="fw-semibold">@t.Title</span><div class="person__meta">@t.Description</div></td>
+                        <td>@(t.DueDate?.ToString("dd MMM yyyy") ?? "—")</td>
+                        <td>@Html.Raw(Ui.TaskStatusBadge(t.Status))</td>
+                        <td><div class="table-actions">
+                            @if (t.Status != TaskItemStatus.Completed)
+                            {
+                                <form asp-action="SetTaskStatus" asp-route-id="@Model.CaseId" method="post">
+                                    <input type="hidden" name="taskId" value="@t.Id" />
+                                    <input type="hidden" name="status" value="@TaskItemStatus.Completed" />
+                                    <button class="btn btn-success btn-sm" type="submit"><i class="bi bi-check2"></i></button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="SetTaskStatus" asp-route-id="@Model.CaseId" method="post">
+                                    <input type="hidden" name="taskId" value="@t.Id" />
+                                    <input type="hidden" name="status" value="@TaskItemStatus.Pending" />
+                                    <button class="btn btn-secondary btn-sm" type="submit"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                </form>
+                            }
+                        </div></td>
+                    </tr>
+                }
+                </tbody>
+            </table></div>
+        }
+        else { <div class="empty"><p class="mb-0">No tasks.</p></div> }
+    </div>
+</div>

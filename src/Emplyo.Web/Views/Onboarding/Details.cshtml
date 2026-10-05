@@ -1,0 +1,90 @@
+@model OnboardingDetailDto
+@{
+    ViewData["Title"] = $"Onboarding · {Model.EmployeeName}";
+    var completed = Model.Tasks.Count(t => t.Status == TaskItemStatus.Completed);
+    var percent = Model.Tasks.Count == 0 ? 0 : (int)Math.Round(completed * 100.0 / Model.Tasks.Count);
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="Index">Onboarding</a><span>/</span>@Model.EmployeeName</nav>
+        <h1>@Model.EmployeeName</h1>
+        <p>@(Model.PositionTitle ?? "—") · @(Model.DepartmentName ?? "—") · Hired @Model.HireDate.ToString("dd MMM yyyy")</p>
+    </div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-controller="Employees" asp-action="Details" asp-route-id="@Model.EmployeeId"><i class="bi bi-person"></i> Employee profile</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Checklist progress</h3></div>
+    <div class="card__body">
+        <div class="progress mb-2"><span style="width:@percent%"></span></div>
+        <span class="text-muted">@completed of @Model.Tasks.Count tasks completed (@percent%)</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Tasks</h3></div>
+    <div class="card__body p-0">
+        @if (Model.Tasks.Any())
+        {
+            <div class="table-wrap"><table class="data-table">
+                <thead><tr><th>Task</th><th>Due</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                @foreach (var t in Model.Tasks)
+                {
+                    <tr>
+                        <td><span class="fw-semibold">@t.Title</span><div class="person__meta">@t.Description</div></td>
+                        <td>@(t.DueDate?.ToString("dd MMM yyyy") ?? "—")</td>
+                        <td>@Html.Raw(Ui.TaskStatusBadge(t.Status))</td>
+                        <td><div class="table-actions">
+                            @if (t.Status != TaskItemStatus.Completed)
+                            {
+                                <form asp-action="SetTaskStatus" asp-route-id="@Model.EmployeeId" method="post">
+                                    <input type="hidden" name="taskId" value="@t.Id" />
+                                    <input type="hidden" name="status" value="@TaskItemStatus.Completed" />
+                                    <button class="btn btn-success btn-sm" type="submit" title="Mark complete"><i class="bi bi-check2"></i></button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="SetTaskStatus" asp-route-id="@Model.EmployeeId" method="post">
+                                    <input type="hidden" name="taskId" value="@t.Id" />
+                                    <input type="hidden" name="status" value="@TaskItemStatus.Pending" />
+                                    <button class="btn btn-secondary btn-sm" type="submit" title="Reopen"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                </form>
+                            }
+                            <form asp-action="DeleteTask" asp-route-id="@Model.EmployeeId" method="post" data-confirm="Remove this task?">
+                                <input type="hidden" name="taskId" value="@t.Id" />
+                                <button class="btn btn-danger btn-sm" type="submit"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div></td>
+                    </tr>
+                }
+                </tbody>
+            </table></div>
+        }
+        else
+        {
+            <div class="empty">
+                <i class="bi bi-list-check"></i><h4>No tasks yet</h4>
+                <p>Apply the standard onboarding checklist or add a custom task.</p>
+                <form asp-action="ApplyTemplate" asp-route-id="@Model.EmployeeId" method="post">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-magic"></i> Apply standard checklist</button>
+                </form>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Add task</h3></div>
+    <div class="card__body">
+        <form asp-action="AddTask" asp-route-id="@Model.EmployeeId" method="post" class="toolbar">
+            <div class="field grow"><label for="Title">Title</label><input id="Title" name="Title" class="form-control" required /></div>
+            <div class="field grow"><label for="Description">Description</label><input id="Description" name="Description" class="form-control" /></div>
+            <div class="field"><label for="DueDate">Due date</label><input id="DueDate" name="DueDate" type="date" class="form-control" /></div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> Add</button>
+        </form>
+    </div>
+</div>

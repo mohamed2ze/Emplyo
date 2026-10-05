@@ -1,0 +1,28 @@
+@using Emplyo.Application.Employees
+@model OffboardingInitiateDto
+@{
+    var employee = ViewBag.Employee as EmployeeDetailDto;
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="Index">Offboarding</a><span>/</span>Initiate</nav>
+        <h1>Initiate offboarding</h1>
+        <p>@employee?.FullName · @employee?.EmployeeNumber</p>
+    </div>
+</div>
+<form asp-action="Initiate" asp-route-employeeId="@employee?.Id" method="post">
+    <div class="card"><div class="card__body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <div class="alert alert-warning"><i class="bi bi-info-circle me-1"></i> The employee record is preserved for historical records. Their employment status changes to terminated only when all offboarding tasks are completed.</div>
+        <div class="form-grid">
+            <div class="field"><label asp-for="DepartureDate">Departure date <span class="req">*</span></label><input asp-for="DepartureDate" type="date" class="form-control" /></div>
+            <div class="field span-2"><label asp-for="Reason">Reason</label><textarea asp-for="Reason" class="form-control" rows="2" maxlength="500"></textarea></div>
+        </div>
+    </div>
+    <div class="card__head" style="border:none">
+        <a class="btn btn-secondary" asp-controller="Employees" asp-action="Details" asp-route-id="@employee?.Id">Cancel</a><span class="spacer"></span>
+        <button class="btn btn-danger" type="submit" data-confirm="Initiate offboarding for this employee?"><i class="bi bi-person-dash"></i> Initiate offboarding</button>
+    </div>
+    </div>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

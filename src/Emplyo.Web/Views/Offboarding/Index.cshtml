@@ -1,0 +1,35 @@
+@model PagedResult<OffboardingOverviewDto>
+@{ var search = ViewBag.Search as string; }
+<div class="page-head">
+    <div class="page-head__text"><h1>Offboarding</h1><p>@Model.TotalCount offboarding case(s).</p></div>
+</div>
+<div class="card"><div class="card__body">
+    <form method="get" asp-action="Index" class="toolbar">
+        <div class="field grow"><label for="search">Search</label><input id="search" name="search" value="@search" class="form-control" placeholder="Employee name" /></div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
+        <a class="btn btn-ghost" asp-action="Index">Clear</a>
+    </form>
+</div></div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Items.Any())
+    {
+        <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>Employee</th><th>Departure</th><th>Reason</th><th>Progress</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            @foreach (var o in Model.Items)
+            {
+                <tr>
+                    <td><a class="row-link" asp-action="Details" asp-route-id="@o.CaseId">@o.EmployeeName</a><div class="person__meta">@o.EmployeeNumber · @(o.DepartmentName ?? "—")</div></td>
+                    <td>@o.DepartureDate.ToString("dd MMM yyyy")</td>
+                    <td class="text-muted">@o.Reason</td>
+                    <td style="min-width:150px"><div class="progress mb-1"><span style="width:@o.ProgressPercent%"></span></div><span class="text-muted small">@o.CompletedTasks / @o.TotalTasks</span></td>
+                    <td>@Html.Raw(Ui.OffboardingStatusBadge(o.Status))</td>
+                    <td><div class="table-actions"><a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@o.CaseId"><i class="bi bi-list-check"></i></a></div></td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+        <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+    }
+    else { <div class="empty"><i class="bi bi-person-dash"></i><h4>No offboarding cases</h4><p>Initiate offboarding from an employee's profile.</p><a class="btn btn-primary" asp-controller="Employees" asp-action="Index">Go to employees</a></div> }
+</div></div>
