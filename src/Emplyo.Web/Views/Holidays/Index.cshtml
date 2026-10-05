@@ -1,0 +1,45 @@
+@model IReadOnlyList<HolidayDto>
+@{
+    ViewData["Title"] = "Holidays";
+    var year = ViewBag.Year as int? ?? DateTime.UtcNow.Year;
+    var canManage = User.IsInRole("Administrator") || User.IsInRole("HRManager");
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>Holidays</h1><p>Company holiday calendar for @year.</p></div>
+    <div class="page-head__actions">
+        <form method="get" asp-action="Index" class="d-flex gap-2">
+            <input type="number" name="year" value="@year" class="form-control" style="width:110px" min="2000" max="2100" />
+            <button class="btn btn-secondary" type="submit">Go</button>
+        </form>
+        @if (canManage) { <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Add holiday</a> }
+    </div>
+</div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Any())
+    {
+        <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>Holiday</th><th>Date</th><th>Recurring</th><th>Description</th>@if (canManage) { <th class="text-end">Actions</th> }</tr></thead>
+            <tbody>
+            @foreach (var h in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@h.Name</td>
+                    <td>@h.Date.ToString("dddd, dd MMM yyyy")</td>
+                    <td>@(h.IsRecurringAnnually ? "Annually" : "One-off")</td>
+                    <td class="text-muted">@h.Description</td>
+                    @if (canManage)
+                    {
+                        <td><div class="table-actions">
+                            <a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@h.Id"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Delete" asp-route-id="@h.Id" method="post" data-confirm="Remove this holiday?">
+                                <button class="btn btn-danger btn-sm" type="submit"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div></td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table></div>
+    }
+    else { <div class="empty"><i class="bi bi-calendar-heart"></i><h4>No holidays for @year</h4><p>Add company holidays to exclude them from leave calculations.</p></div> }
+</div></div>

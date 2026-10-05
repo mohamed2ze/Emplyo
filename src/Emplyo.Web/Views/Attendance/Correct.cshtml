@@ -1,0 +1,61 @@
+@using Emplyo.Application.Employees
+@model AttendanceCorrectionDto
+@{
+    ViewData["Title"] = "Correct attendance";
+    var employees = ViewBag.Employees as IReadOnlyList<ManagerOptionDto> ?? new List<ManagerOptionDto>();
+    var selected = ViewBag.SelectedEmployeeId as int?;
+    var recordId = ViewBag.RecordId as int?;
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="Index">Attendance</a><span>/</span>@(recordId.HasValue ? "Correct record" : "Add record")</nav>
+        <h1>@(recordId.HasValue ? "Correct attendance record" : "Add attendance record")</h1>
+        <p>Times are entered and displayed in the organization's configured time zone. Corrections are recorded in the audit log.</p>
+    </div>
+</div>
+
+<form asp-action="Correct" method="post">
+    <input type="hidden" name="id" value="@recordId" />
+    <div class="card">
+        <div class="card__body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="employeeId">Employee <span class="req">*</span></label>
+                    <select id="employeeId" name="employeeId" class="form-select" required>
+                        <option value="">— Select employee —</option>
+                        @foreach (var e in employees)
+                        {
+                            <option value="@e.Id" selected="@(selected == e.Id)">@e.FullName (@e.EmployeeNumber)</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label asp-for="WorkDate">Work date <span class="req">*</span></label>
+                    <input asp-for="WorkDate" type="date" class="form-control" />
+                </div>
+                <div class="field">
+                    <label asp-for="ClockIn">Clock-in</label>
+                    <input asp-for="ClockIn" type="datetime-local" class="form-control" />
+                </div>
+                <div class="field">
+                    <label asp-for="ClockOut">Clock-out</label>
+                    <input asp-for="ClockOut" type="datetime-local" class="form-control" />
+                </div>
+                <div class="field">
+                    <label asp-for="Status">Status</label>
+                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<AttendanceStatus>()"></select>
+                </div>
+                <div class="field span-2">
+                    <label asp-for="Notes">Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Reason for correction"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="card__head" style="border-top:1px solid var(--border);border-bottom:none">
+            <a class="btn btn-secondary" asp-action="Index">Cancel</a><span class="spacer"></span>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save record</button>
+        </div>
+    </div>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

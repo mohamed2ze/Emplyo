@@ -1,0 +1,80 @@
+@model IReadOnlyList<AttendanceListItemDto>
+@{
+    ViewData["Title"] = "My attendance";
+    var today = ViewBag.Today as TodayAttendanceDto;
+    var summary = ViewBag.Summary as AttendanceSummaryDto;
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>My attendance</h1><p>Your clock-in activity for the last 45 days.</p></div>
+    <div class="page-head__actions">
+        @if (today is not null)
+        {
+            if (today.CanClockIn)
+            {
+                <button class="btn btn-primary" data-clock-action="ClockIn"><i class="bi bi-box-arrow-in-right"></i> Clock in</button>
+            }
+            else if (today.CanClockOut)
+            {
+                <button class="btn btn-success" data-clock-action="ClockOut"><i class="bi bi-box-arrow-right"></i> Clock out</button>
+            }
+            else
+            {
+                <span class="badge-soft"><i class="bi bi-check2-circle"></i> Day complete</span>
+            }
+        }
+    </div>
+</div>
+
+<div class="grid-2 mb-4">
+    <div class="card mb-0">
+        <div class="card__head"><h3>Today · @(today?.WorkDate.ToString("dddd, dd MMM yyyy") ?? DateTime.UtcNow.ToString("dddd, dd MMM yyyy"))</h3></div>
+        <div class="card__body">
+            <div class="d-flex gap-4">
+                <div><div class="text-muted small">Clock-in</div><div class="fs-4 fw-semibold">@(today?.ClockInUtc is not null ? Tz.ToLocal(today.ClockInUtc.Value).ToString("HH:mm") : "—")</div></div>
+                <div><div class="text-muted small">Clock-out</div><div class="fs-4 fw-semibold">@(today?.ClockOutUtc is not null ? Tz.ToLocal(today.ClockOutUtc.Value).ToString("HH:mm") : "—")</div></div>
+                <div><div class="text-muted small">Status</div><div class="fs-4">@(today?.Status is not null ? Html.Raw(Ui.AttendanceStatusBadge(today.Status.Value)) : Html.Raw("<span class=\"text-muted\">Not started</span>"))</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-0">
+        <div class="card__head"><h3>Summary (45 days)</h3></div>
+        <div class="card__body">
+            @if (summary is not null)
+            {
+                <div class="stat-grid">
+                    <div class="stat"><div class="stat__icon green"><i class="bi bi-check2"></i></div><div><div class="stat__value">@summary.PresentDays</div><div class="stat__label">Present</div></div></div>
+                    <div class="stat"><div class="stat__icon amber"><i class="bi bi-clock"></i></div><div><div class="stat__value">@summary.LateDays</div><div class="stat__label">Late</div></div></div>
+                    <div class="stat"><div class="stat__icon slate"><i class="bi bi-hourglass"></i></div><div><div class="stat__value">@summary.TotalWorkedHours</div><div class="stat__label">Hours</div></div></div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Attendance history</h3></div>
+    <div class="card__body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>Date</th><th>Clock-in</th><th>Clock-out</th><th class="num">Hours</th><th>Status</th><th>Notes</th></tr></thead>
+                    <tbody>
+                    @foreach (var a in Model)
+                    {
+                        <tr>
+                            <td>@a.WorkDate.ToString("ddd, dd MMM yyyy")</td>
+                            <td>@(a.ClockInUtc.HasValue ? Tz.ToLocal(a.ClockInUtc.Value).ToString("HH:mm") : "—")</td>
+                            <td>@(a.ClockOutUtc.HasValue ? Tz.ToLocal(a.ClockOutUtc.Value).ToString("HH:mm") : "—")</td>
+                            <td class="num">@(a.WorkedHours?.ToString("0.##") ?? "—")</td>
+                            <td>@Html.Raw(Ui.AttendanceStatusBadge(a.Status))</td>
+                            <td class="text-muted">@a.Notes</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else { <div class="empty"><i class="bi bi-clock-history"></i><h4>No attendance records</h4><p>Use the clock-in button to start recording your time.</p></div> }
+    </div>
+</div>

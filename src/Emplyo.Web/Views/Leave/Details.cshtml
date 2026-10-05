@@ -1,0 +1,99 @@
+@model LeaveRequestDetailDto
+@{
+    var isStaff = ViewBag.IsStaff as bool? ?? false;
+    var isOwner = ViewBag.IsOwner as bool? ?? false;
+    ViewData["Title"] = "Leave request";
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="@(isStaff ? "Index" : "My")">Leave</a><span>/</span>Request #@Model.Id</nav>
+        <h1>@Model.LeaveTypeName request</h1>
+        <p>@Model.EmployeeName · @Model.EmployeeNumber · @(Model.DepartmentName ?? "—")</p>
+    </div>
+    <div class="page-head__actions">
+        @Html.Raw(Ui.LeaveStatusBadge(Model.Status))
+        @if (isStaff)
+        {
+            <a class="btn btn-secondary" asp-controller="Employees" asp-action="Details" asp-route-id="@Model.EmployeeId"><i class="bi bi-person"></i> View employee</a>
+        }
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>Request details</h3></div>
+        <div class="card__body">
+            <dl class="dl">
+                <dt>Leave type</dt><dd>@Model.LeaveTypeName</dd>
+                <dt>Start date</dt><dd>@Model.StartDate.ToString("dddd, dd MMM yyyy")</dd>
+                <dt>End date</dt><dd>@Model.EndDate.ToString("dddd, dd MMM yyyy")</dd>
+                <dt>Half day</dt><dd>@(Model.IsHalfDay ? "Yes" : "No")</dd>
+                <dt>Total days</dt><dd>@Model.TotalDays.ToString("0.#")</dd>
+                <dt>Reason</dt><dd>@(string.IsNullOrWhiteSpace(Model.Reason) ? "—" : Model.Reason)</dd>
+                <dt>Requested</dt><dd>@Tz.ToLocal(Model.CreatedAtUtc).ToString("dd MMM yyyy HH:mm")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__head"><h3>Decision</h3></div>
+        <div class="card__body">
+            @if (Model.Status == LeaveRequestStatus.Pending)
+            {
+                if (isStaff)
+                {
+                    <form asp-action="Approve" asp-route-id="@Model.Id" method="post" class="mb-3" id="decision">
+                        <div class="field mb-2">
+                            <label for="approveComment">Comment (optional)</label>
+                            <textarea id="approveComment" name="Comments" class="form-control" rows="2" maxlength="500"></textarea>
+                        </div>
+                        <button class="btn btn-success" type="submit"><i class="bi bi-check2-circle"></i> Approve</button>
+                    </form>
+                    <form asp-action="Reject" asp-route-id="@Model.Id" method="post">
+                        <div class="field mb-2">
+                            <label for="rejectComment">Rejection reason</label>
+                            <textarea id="rejectComment" name="Comments" class="form-control" rows="2" maxlength="500"></textarea>
+                        </div>
+                        <button class="btn btn-danger" type="submit" data-confirm="Reject this leave request?"><i class="bi bi-x-circle"></i> Reject</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="text-muted">This request is awaiting review by HR or an administrator.</p>
+                }
+                @if (isOwner || isStaff)
+                {
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="mt-3">
+                        <button class="btn btn-ghost" type="submit" data-confirm="Cancel this leave request?"><i class="bi bi-slash-circle"></i> Cancel request</button>
+                    </form>
+                }
+            }
+            else if (Model.Status == LeaveRequestStatus.Approved)
+            {
+                <div class="alert alert-success mb-2"><i class="bi bi-check-circle me-1"></i> Approved by @(Model.DecisionByName ?? "system")</div>
+                <dl class="dl mb-0">
+                    <dt>Approved on</dt><dd>@(Model.DecisionAtUtc.HasValue ? Tz.ToLocal(Model.DecisionAtUtc.Value).ToString("dd MMM yyyy HH:mm") : "—")</dd>
+                    <dt>Comment</dt><dd>@(Model.DecisionComments ?? "—")</dd>
+                </dl>
+                @if ((isOwner || isStaff) && Model.StartDate > DateOnly.FromDateTime(DateTime.UtcNow))
+                {
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="mt-3">
+                        <button class="btn btn-ghost" type="submit" data-confirm="Cancel this approved leave? The balance will be restored."><i class="bi bi-slash-circle"></i> Cancel request</button>
+                    </form>
+                }
+            }
+            else if (Model.Status == LeaveRequestStatus.Rejected)
+            {
+                <div class="alert alert-danger mb-2"><i class="bi bi-x-circle me-1"></i> Rejected by @(Model.DecisionByName ?? "system")</div>
+                <dl class="dl mb-0">
+                    <dt>Rejected on</dt><dd>@(Model.DecisionAtUtc.HasValue ? Tz.ToLocal(Model.DecisionAtUtc.Value).ToString("dd MMM yyyy HH:mm") : "—")</dd>
+                    <dt>Reason</dt><dd>@(Model.DecisionComments ?? "—")</dd>
+                </dl>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-0">This request was cancelled.</div>
+            }
+        </div>
+    </div>
+</div>

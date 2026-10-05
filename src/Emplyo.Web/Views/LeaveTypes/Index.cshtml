@@ -1,0 +1,29 @@
+@model IReadOnlyList<LeaveTypeDto>
+@{ ViewData["Title"] = "Leave types"; }
+<div class="page-head">
+    <div class="page-head__text"><h1>Leave types</h1><p>Configure the leave categories available to employees.</p></div>
+    <div class="page-head__actions"><a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Add leave type</a></div>
+</div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Any())
+    {
+        <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>Name</th><th class="num">Annual entitlement</th><th>Paid</th><th>Approval</th><th>Status</th><th class="num">Requests</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            @foreach (var t in Model)
+            {
+                <tr>
+                    <td><span class="fw-semibold">@t.Name</span><div class="person__meta">@t.Description</div></td>
+                    <td class="num">@t.DefaultAnnualEntitlement.ToString("0.#") days</td>
+                    <td>@(t.IsPaid ? "Paid" : "Unpaid")</td>
+                    <td>@(t.RequiresApproval ? "Required" : "Automatic")</td>
+                    <td>@Html.Raw(Ui.ActiveBadge(t.IsActive))</td>
+                    <td class="num">@t.RequestCount</td>
+                    <td><div class="table-actions"><a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@t.Id"><i class="bi bi-pencil"></i></a></div></td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+    }
+    else { <div class="empty"><i class="bi bi-tags"></i><h4>No leave types</h4><p>Add a leave type to let employees request time off.</p></div> }
+</div></div>

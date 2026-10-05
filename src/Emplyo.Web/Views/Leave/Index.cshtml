@@ -1,0 +1,81 @@
+@model PagedResult<LeaveRequestListItemDto>
+@{
+    var filter = ViewBag.Filter as LeaveFilter ?? new LeaveFilter();
+    var leaveTypes = ViewBag.LeaveTypes as IReadOnlyList<Emplyo.Domain.Entities.LeaveType> ?? new List<Emplyo.Domain.Entities.LeaveType>();
+    var pendingCount = ViewBag.PendingCount as int? ?? 0;
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>Leave management</h1><p>@Model.TotalCount request(s) · @pendingCount pending approval.</p></div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-action="Index" asp-route-Status="Pending"><i class="bi bi-hourglass-split"></i> Pending queue (@pendingCount)</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__body">
+        <form method="get" asp-action="Index" class="toolbar">
+            <div class="field grow"><label for="Search">Employee</label><input id="Search" name="Search" value="@filter.Search" class="form-control" placeholder="Name or number" /></div>
+            <div class="field">
+                <label for="LeaveTypeId">Leave type</label>
+                <select id="LeaveTypeId" name="LeaveTypeId" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    @foreach (var t in leaveTypes) { <option value="@t.Id" selected="@(filter.LeaveTypeId == t.Id)">@t.Name</option> }
+                </select>
+            </div>
+            <div class="field">
+                <label for="Status">Status</label>
+                <select id="Status" name="Status" class="form-select" data-auto-submit>
+                    <option value="">All</option>
+                    @foreach (var s in Enum.GetValues<LeaveRequestStatus>())
+                    {
+                        <option value="@s" selected="@(filter.Status == s)">@Ui.Humanize(s)</option>
+                    }
+                </select>
+            </div>
+            <div class="field"><label for="From">From</label><input id="From" name="From" type="date" value="@(filter.From?.ToString("yyyy-MM-dd"))" class="form-control" /></div>
+            <div class="field"><label for="To">To</label><input id="To" name="To" type="date" value="@(filter.To?.ToString("yyyy-MM-dd"))" class="form-control" /></div>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Filter</button>
+            <a class="btn btn-ghost" asp-action="Index">Clear</a>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__body p-0">
+        @if (Model.Items.Any())
+        {
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th class="num">Days</th><th>Status</th><th>Requested</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                    @foreach (var l in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a class="row-link" asp-controller="Employees" asp-action="Details" asp-route-id="@l.EmployeeId">@l.EmployeeName</a>
+                                <div class="person__meta">@l.EmployeeNumber · @(l.DepartmentName ?? "—")</div>
+                            </td>
+                            <td>@l.LeaveTypeName</td>
+                            <td>@l.StartDate.ToString("dd MMM") – @l.EndDate.ToString("dd MMM yyyy")</td>
+                            <td class="num">@l.TotalDays.ToString("0.#")</td>
+                            <td>@Html.Raw(Ui.LeaveStatusBadge(l.Status))</td>
+                            <td class="text-muted">@l.CreatedAtUtc.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div class="table-actions">
+                                    <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@l.Id" aria-label="View"><i class="bi bi-eye"></i></a>
+                                    @if (l.Status == LeaveRequestStatus.Pending)
+                                    {
+                                        <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@l.Id" asp-fragment="decision" aria-label="Review"><i class="bi bi-check2-square"></i></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+        }
+        else { <div class="empty"><i class="bi bi-calendar2-check"></i><h4>No leave requests found</h4><p>Adjust the filters to see results.</p></div> }
+    </div>
+</div>

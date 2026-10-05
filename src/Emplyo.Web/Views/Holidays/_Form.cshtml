@@ -1,0 +1,18 @@
+@model HolidayFormDto
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<div class="form-grid">
+    <div class="field">
+        <label asp-for="Name">Name <span class="req">*</span></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="validation"></span>
+    </div>
+    <div class="field">
+        <label asp-for="Date">Date <span class="req">*</span></label>
+        <input asp-for="Date" type="date" class="form-control" />
+    </div>
+    <div class="field span-2">
+        <label asp-for="Description">Description</label>
+        <textarea asp-for="Description" class="form-control" rows="2" maxlength="300"></textarea>
+    </div>
+    <div class="field"><label class="checkbox"><input asp-for="IsRecurringAnnually" type="checkbox" /> <span>Repeats annually</span></label></div>
+</div>

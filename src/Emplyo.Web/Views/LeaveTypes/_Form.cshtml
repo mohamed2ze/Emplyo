@@ -1,0 +1,20 @@
+@model LeaveTypeFormDto
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+<div class="form-grid">
+    <div class="field">
+        <label asp-for="Name">Name <span class="req">*</span></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="validation"></span>
+    </div>
+    <div class="field">
+        <label asp-for="DefaultAnnualEntitlement">Default annual entitlement (days)</label>
+        <input asp-for="DefaultAnnualEntitlement" type="number" step="0.5" min="0" max="365" class="form-control" />
+    </div>
+    <div class="field span-2">
+        <label asp-for="Description">Description</label>
+        <textarea asp-for="Description" class="form-control" rows="2" maxlength="400"></textarea>
+    </div>
+    <div class="field"><label class="checkbox"><input asp-for="IsPaid" type="checkbox" /> <span>Paid leave</span></label></div>
+    <div class="field"><label class="checkbox"><input asp-for="RequiresApproval" type="checkbox" /> <span>Requires approval</span></label></div>
+    <div class="field"><label class="checkbox"><input asp-for="IsActive" type="checkbox" /> <span>Active</span></label></div>
+</div>

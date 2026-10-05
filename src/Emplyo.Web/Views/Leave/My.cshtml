@@ -1,0 +1,56 @@
+@model PagedResult<LeaveRequestListItemDto>
+@{
+    var balances = ViewBag.Balances as IReadOnlyList<LeaveBalanceDto> ?? new List<LeaveBalanceDto>();
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>My leave</h1><p>Your leave balances and request history.</p></div>
+    <div class="page-head__actions"><a class="btn btn-primary" asp-action="Create"><i class="bi bi-calendar-plus"></i> Request leave</a></div>
+</div>
+
+<div class="stat-grid mb-4">
+    @if (balances.Any())
+    {
+        foreach (var b in balances)
+        {
+            <div class="stat">
+                <div class="stat__icon teal"><i class="bi bi-calendar2-check"></i></div>
+                <div>
+                    <div class="stat__value">@b.Remaining.ToString("0.#")</div>
+                    <div class="stat__label">@b.LeaveTypeName · @b.Used.ToString("0.#") used of @b.Entitlement.ToString("0.#")</div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card mb-0"><div class="card__body text-muted">No leave balances configured for this year.</div></div>
+    }
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Request history</h3></div>
+    <div class="card__body p-0">
+        @if (Model.Items.Any())
+        {
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead><tr><th>Type</th><th>Dates</th><th class="num">Days</th><th>Status</th><th>Requested</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                    @foreach (var l in Model.Items)
+                    {
+                        <tr>
+                            <td><a class="row-link" asp-action="Details" asp-route-id="@l.Id">@l.LeaveTypeName</a></td>
+                            <td>@l.StartDate.ToString("dd MMM") – @l.EndDate.ToString("dd MMM yyyy")</td>
+                            <td class="num">@l.TotalDays.ToString("0.#")</td>
+                            <td>@Html.Raw(Ui.LeaveStatusBadge(l.Status))</td>
+                            <td class="text-muted">@l.CreatedAtUtc.ToString("dd MMM yyyy")</td>
+                            <td><div class="table-actions"><a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@l.Id"><i class="bi bi-eye"></i></a></div></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else { <div class="empty"><i class="bi bi-calendar2-check"></i><h4>No leave requests yet</h4><p>Submit your first leave request to get started.</p><a class="btn btn-primary" asp-action="Create">Request leave</a></div> }
+    </div>
+</div>
