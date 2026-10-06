@@ -1,0 +1,112 @@
+@using Emplyo.Application.Reporting
+@using Emplyo.Application.Organization
+@{
+    ViewData["Title"] = "Reports";
+    var year = ViewBag.Year as int? ?? DateTime.UtcNow.Year;
+    var departmentId = ViewBag.DepartmentId as int?;
+    var departments = ViewBag.Departments as IReadOnlyList<LookupItemDto> ?? new List<LookupItemDto>();
+    var headcount = ViewBag.Headcount as IReadOnlyList<DepartmentHeadcountDto> ?? new List<DepartmentHeadcountDto>();
+    var statusSummary = ViewBag.StatusSummary as IReadOnlyList<StatusSummaryDto> ?? new List<StatusSummaryDto>();
+    var recentHires = ViewBag.RecentHires as IReadOnlyList<RecentHireDto> ?? new List<RecentHireDto>();
+    var leaveUtil = ViewBag.LeaveUtilization as IReadOnlyList<LeaveUtilizationDto> ?? new List<LeaveUtilizationDto>();
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>Reports</h1><p>Operational reporting and authorized CSV exports.</p></div>
+    <div class="page-head__actions">
+        <a class="btn btn-secondary" asp-action="ExportEmployees"><i class="bi bi-filetype-csv"></i> Employee directory</a>
+        <a class="btn btn-secondary" asp-action="ExportHeadcount"><i class="bi bi-filetype-csv"></i> Headcount</a>
+    </div>
+</div>
+
+<div class="card"><div class="card__body">
+    <form method="get" asp-action="Index" class="toolbar">
+        <div class="field"><label for="year">Year</label><input id="year" name="year" type="number" value="@year" class="form-control" style="width:120px" /></div>
+        <div class="field grow">
+            <label for="departmentId">Department (leave utilization)</label>
+            <select id="departmentId" name="departmentId" class="form-select">
+                <option value="">All departments</option>
+                @foreach (var d in departments) { <option value="@d.Id" selected="@(departmentId == d.Id)">@d.Name</option> }
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i> Apply</button>
+        <a class="btn btn-secondary" asp-action="Attendance"><i class="bi bi-clock-history"></i> Attendance report</a>
+    </form>
+</div></div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card__head"><h3>Headcount by department</h3><span class="spacer"></span><a class="small" asp-action="ExportHeadcount">Export CSV</a></div>
+        <div class="card__body">
+            @if (headcount.Any())
+            {
+                <div class="chart-box"><canvas data-chart="bar" data-chart-labels="@System.Text.Json.JsonSerializer.Serialize(headcount.Select(h => h.DepartmentName))" data-chart-values="@System.Text.Json.JsonSerializer.Serialize(headcount.Select(h => h.TotalCount))"></canvas></div>
+            }
+            else { <div class="empty"><p class="mb-0">No headcount data.</p></div> }
+        </div>
+    </div>
+    <div class="card">
+        <div class="card__head"><h3>Employment status</h3></div>
+        <div class="card__body p-0">
+            <table class="data-table">
+                <thead><tr><th>Status</th><th class="num">Employees</th></tr></thead>
+                <tbody>
+                @foreach (var s in statusSummary)
+                {
+                    <tr><td>@Html.Raw(Ui.EmploymentStatusBadge(s.Status))</td><td class="num">@s.Count</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Leave utilization · @year</h3><span class="spacer"></span><a class="small" asp-action="ExportLeaveUtilization" asp-route-year="@year" asp-route-departmentId="@departmentId">Export CSV</a></div>
+    <div class="card__body p-0">
+        @if (leaveUtil.Any())
+        {
+            <div class="table-wrap"><table class="data-table">
+                <thead><tr><th>Employee</th><th>Department</th><th>Leave type</th><th class="num">Entitlement</th><th class="num">Used</th><th class="num">Remaining</th></tr></thead>
+                <tbody>
+                @foreach (var l in leaveUtil)
+                {
+                    <tr>
+                        <td>@l.EmployeeName<div class="person__meta">@l.EmployeeNumber</div></td>
+                        <td>@(l.DepartmentName ?? "—")</td>
+                        <td>@l.LeaveTypeName</td>
+                        <td class="num">@l.Entitlement.ToString("0.#")</td>
+                        <td class="num">@l.Used.ToString("0.#")</td>
+                        <td class="num fw-semibold">@l.Remaining.ToString("0.#")</td>
+                    </tr>
+                }
+                </tbody>
+            </table></div>
+        }
+        else { <div class="empty"><p class="mb-0">No leave balances for this selection.</p></div> }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card__head"><h3>Recent hires</h3><span class="spacer"></span><a class="small" asp-action="ExportEmployees">Export directory</a></div>
+    <div class="card__body p-0">
+        @if (recentHires.Any())
+        {
+            <div class="table-wrap"><table class="data-table">
+                <thead><tr><th>Employee</th><th>Department</th><th>Position</th><th>Hire date</th><th>Status</th></tr></thead>
+                <tbody>
+                @foreach (var h in recentHires)
+                {
+                    <tr>
+                        <td><a class="row-link" asp-controller="Employees" asp-action="Details" asp-route-id="@h.EmployeeId">@h.EmployeeName</a></td>
+                        <td>@(h.DepartmentName ?? "—")</td>
+                        <td>@(h.PositionTitle ?? "—")</td>
+                        <td>@h.HireDate.ToString("dd MMM yyyy")</td>
+                        <td>@Html.Raw(Ui.EmploymentStatusBadge(h.Status))</td>
+                    </tr>
+                }
+                </tbody>
+            </table></div>
+        }
+        else { <div class="empty"><p class="mb-0">No hires recorded.</p></div> }
+    </div>
+</div>

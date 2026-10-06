@@ -1,0 +1,50 @@
+@model Emplyo.Web.Controllers.SettingsViewModel
+<div class="page-head"><div class="page-head__text"><h1>Settings</h1><p>Organization-wide configuration.</p></div></div>
+<div class="grid-2">
+    <form asp-action="Index" method="post">
+        <div class="card">
+            <div class="card__head"><h3>General</h3></div>
+            <div class="card__body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <div class="field mb-3">
+                    <label asp-for="OrganizationName">Organization name</label>
+                    <input asp-for="OrganizationName" class="form-control" />
+                    <span asp-validation-for="OrganizationName" class="validation"></span>
+                </div>
+                <div class="field mb-3">
+                    <label asp-for="OrganizationTimeZone">Time zone (IANA)</label>
+                    <input asp-for="OrganizationTimeZone" class="form-control" placeholder="Europe/Berlin" />
+                    <span class="hint">Used for displaying timestamps and determining attendance days. Example: Europe/Berlin, America/New_York, UTC.</span>
+                    <span asp-validation-for="OrganizationTimeZone" class="validation"></span>
+                </div>
+                <div class="field mb-3">
+                    <label asp-for="WorkDayStart">Work day start (HH:mm)</label>
+                    <input asp-for="WorkDayStart" class="form-control" placeholder="09:00" />
+                    <span class="hint">Clock-ins after this time are flagged as late.</span>
+                    <span asp-validation-for="WorkDayStart" class="validation"></span>
+                </div>
+                <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save settings</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="card__head"><h3>All configured values</h3></div>
+        <div class="card__body p-0">
+            @if (Model.All.Any())
+            {
+                <table class="data-table">
+                    <thead><tr><th>Key</th><th>Value</th></tr></thead>
+                    <tbody>
+                    @foreach (var s in Model.All)
+                    {
+                        <tr><td class="fw-semibold">@s.Key<div class="person__meta">@s.Description</div></td><td>@s.Value</td></tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <div class="empty"><p class="mb-0">No values stored yet.</p></div> }
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

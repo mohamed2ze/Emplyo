@@ -1,0 +1,36 @@
+@model CreateUserDto
+@{
+    var roles = ViewBag.Roles as string[] ?? new[] { "Administrator", "HRManager", "Employee" };
+    var employees = ViewBag.Employees as IReadOnlyList<(int Id, string Name, string Number)> ?? new List<(int, string, string)>();
+}
+<div class="page-head"><div class="page-head__text"><nav class="breadcrumb"><a asp-action="Index">Users</a><span>/</span>Create</nav><h1>Create user</h1><p>Provision a new account. Password requirements: 12+ characters with upper, lower, number and symbol.</p></div></div>
+<form asp-action="Create" method="post">
+    <div class="card"><div class="card__body">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <div class="form-grid">
+            <div class="field"><label asp-for="DisplayName">Display name <span class="req">*</span></label><input asp-for="DisplayName" class="form-control" /><span asp-validation-for="DisplayName" class="validation"></span></div>
+            <div class="field"><label asp-for="Email">Email <span class="req">*</span></label><input asp-for="Email" type="email" class="form-control" /><span asp-validation-for="Email" class="validation"></span></div>
+            <div class="field"><label asp-for="Password">Temporary password <span class="req">*</span></label><input asp-for="Password" type="text" class="form-control" autocomplete="off" /><span asp-validation-for="Password" class="validation"></span></div>
+            <div class="field">
+                <label asp-for="Role">Role <span class="req">*</span></label>
+                <select asp-for="Role" class="form-select">
+                    @foreach (var r in roles) { <option value="@r">@r</option> }
+                </select>
+            </div>
+            <div class="field">
+                <label asp-for="EmployeeId">Link to employee</label>
+                <select asp-for="EmployeeId" class="form-select">
+                    <option value="">— Not linked —</option>
+                    @foreach (var e in employees) { <option value="@e.Id">@e.Name (@e.Number)</option> }
+                </select>
+            </div>
+        </div>
+        <p class="hint mt-2 mb-0">Share the temporary password with the user through a secure channel. They can change it after signing in.</p>
+    </div>
+    <div class="card__head" style="border:none">
+        <a class="btn btn-secondary" asp-action="Index">Cancel</a><span class="spacer"></span>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Create user</button>
+    </div>
+    </div>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

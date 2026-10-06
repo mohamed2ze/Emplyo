@@ -1,0 +1,55 @@
+@model PagedResult<AuditLogDto>
+@{
+    var filter = ViewBag.Filter as AuditFilter ?? new AuditFilter();
+    var actions = ViewBag.Actions as IReadOnlyList<string> ?? new List<string>();
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>Audit logs</h1><p>Immutable record of important administrative and operational events. @Model.TotalCount entries.</p></div>
+</div>
+<div class="card"><div class="card__body">
+    <form method="get" asp-action="Index" class="toolbar">
+        <div class="field grow"><label for="Search">Search</label><input id="Search" name="Search" value="@filter.Search" class="form-control" placeholder="Actor, action or target" /></div>
+        <div class="field">
+            <label for="Action">Action</label>
+            <select id="Action" name="Action" class="form-select" data-auto-submit>
+                <option value="">All actions</option>
+                @foreach (var a in actions) { <option value="@a" selected="@(filter.Action == a)">@a</option> }
+            </select>
+        </div>
+        <div class="field">
+            <label for="Outcome">Outcome</label>
+            <select id="Outcome" name="Outcome" class="form-select" data-auto-submit>
+                <option value="">All</option>
+                <option value="Success" selected="@(filter.Outcome == AuditOutcome.Success)">Success</option>
+                <option value="Failure" selected="@(filter.Outcome == AuditOutcome.Failure)">Failure</option>
+            </select>
+        </div>
+        <div class="field"><label for="From">From</label><input id="From" name="From" type="date" value="@(filter.From?.ToString("yyyy-MM-dd"))" class="form-control" /></div>
+        <div class="field"><label for="To">To</label><input id="To" name="To" type="date" value="@(filter.To?.ToString("yyyy-MM-dd"))" class="form-control" /></div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Filter</button>
+        <a class="btn btn-ghost" asp-action="Index">Clear</a>
+    </form>
+</div></div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Items.Any())
+    {
+        <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>Outcome</th><th>Details</th></tr></thead>
+            <tbody>
+            @foreach (var a in Model.Items)
+            {
+                <tr>
+                    <td class="text-nowrap">@Tz.ToLocal(a.TimestampUtc).ToString("dd MMM yyyy HH:mm:ss")</td>
+                    <td>@a.ActorName</td>
+                    <td><span class="badge-soft">@a.Action</span></td>
+                    <td>@a.TargetType @if (!string.IsNullOrEmpty(a.TargetId)) { <span class="text-muted">#@a.TargetId</span> }</td>
+                    <td>@Html.Raw(Ui.OutcomeBadge(a.Outcome))</td>
+                    <td class="text-muted small">@a.Metadata</td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+        <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+    }
+    else { <div class="empty"><i class="bi bi-shield-check"></i><h4>No audit entries found</h4><p>Adjust the filters to see results.</p></div> }
+</div></div>

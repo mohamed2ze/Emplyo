@@ -1,0 +1,50 @@
+@model PagedResult<UserListItemDto>
+@{
+    var search = ViewBag.Search as string;
+    var role = ViewBag.Role as string;
+    var roles = ViewBag.Roles as string[] ?? Array.Empty<string>();
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>User management</h1><p>@Model.TotalCount user account(s). Roles are assigned and revoked here.</p></div>
+    <div class="page-head__actions"><a class="btn btn-primary" asp-action="Create"><i class="bi bi-person-plus"></i> Create user</a></div>
+</div>
+<div class="card"><div class="card__body">
+    <form method="get" asp-action="Index" class="toolbar">
+        <div class="field grow"><label for="search">Search</label><input id="search" name="search" value="@search" class="form-control" placeholder="Email or name" /></div>
+        <div class="field">
+            <label for="role">Role</label>
+            <select id="role" name="role" class="form-select" data-auto-submit>
+                <option value="">All roles</option>
+                @foreach (var r in roles) { <option value="@r" selected="@(role == r)">@r</option> }
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
+        <a class="btn btn-ghost" asp-action="Index">Clear</a>
+    </form>
+</div></div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Items.Any())
+    {
+        <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>User</th><th>Roles</th><th>Linked employee</th><th>Status</th><th>Last login</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            @foreach (var u in Model.Items)
+            {
+                <tr>
+                    <td><span class="fw-semibold">@u.DisplayName</span><div class="person__meta">@u.Email</div></td>
+                    <td>@foreach (var r in u.Roles) { <span class="badge-soft me-1">@r</span> }</td>
+                    <td>@(u.EmployeeName ?? "—")</td>
+                    <td>@Html.Raw(Ui.ActiveBadge(u.IsActive))</td>
+                    <td class="text-muted">@(u.LastLoginUtc?.ToString("dd MMM yyyy HH:mm") ?? "Never")</td>
+                    <td><div class="table-actions">
+                        <a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@u.Id" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+                        <a class="btn btn-secondary btn-sm" asp-action="ResetPassword" asp-route-id="@u.Id" aria-label="Reset password"><i class="bi bi-key"></i></a>
+                    </div></td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+        <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+    }
+    else { <div class="empty"><i class="bi bi-person-gear"></i><h4>No users found</h4><p>Adjust your filters or create a user account.</p></div> }
+</div></div>
