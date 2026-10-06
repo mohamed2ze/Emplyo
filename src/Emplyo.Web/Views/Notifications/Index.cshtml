@@ -1,0 +1,45 @@
+@model IReadOnlyList<NotificationDto>
+<div class="page-head">
+    <div class="page-head__text"><h1>Notifications</h1><p>Workflow updates relevant to you.</p></div>
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <div class="page-head__actions">
+            <form asp-action="MarkAllRead" method="post"><button class="btn btn-secondary" type="submit"><i class="bi bi-check2-all"></i> Mark all as read</button></form>
+        </div>
+    }
+</div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Any())
+    {
+        <div class="notif-list">
+            @foreach (var n in Model)
+            {
+                <div class="notif-item @(n.IsRead ? "" : "unread")">
+                    <div class="notif-item__icon"><i class="bi @(n.Type switch { NotificationType.LeaveApproved => "bi-check-circle", NotificationType.LeaveRejected => "bi-x-circle", NotificationType.LeaveSubmitted => "bi-send", NotificationType.Announcement => "bi-megaphone", _ => "bi-bell" })"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between gap-2">
+                            <strong>@n.Title</strong>
+                            <span class="text-muted small text-nowrap">@Tz.ToLocal(n.CreatedAtUtc).ToString("dd MMM HH:mm")</span>
+                        </div>
+                        <div class="text-muted">@n.Message</div>
+                        <div class="mt-1 d-flex gap-2">
+                            @if (!string.IsNullOrEmpty(n.Url))
+                            {
+                                <form asp-action="MarkRead" asp-route-id="@n.Id" method="post">
+                                    <button class="btn btn-secondary btn-sm" type="submit"><i class="bi bi-box-arrow-up-right"></i> Open</button>
+                                </form>
+                            }
+                            @if (!n.IsRead)
+                            {
+                                <form asp-action="MarkRead" asp-route-id="@n.Id" method="post">
+                                    <button class="btn btn-ghost btn-sm" type="submit">Mark read</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else { <div class="empty"><i class="bi bi-bell-slash"></i><h4>No notifications</h4><p>You are all caught up.</p></div> }
+</div></div>

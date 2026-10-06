@@ -1,0 +1,50 @@
+@model PagedResult<AnnouncementListItemDto>
+@{
+    var search = ViewBag.Search as string;
+    var published = ViewBag.Published as bool?;
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>Announcements</h1><p>@Model.TotalCount announcement(s).</p></div>
+    <div class="page-head__actions"><a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> New announcement</a></div>
+</div>
+<div class="card"><div class="card__body">
+    <form method="get" asp-action="Index" class="toolbar">
+        <div class="field grow"><label for="search">Search</label><input id="search" name="search" value="@search" class="form-control" placeholder="Title" /></div>
+        <div class="field">
+            <label for="published">Status</label>
+            <select id="published" name="published" class="form-select" data-auto-submit>
+                <option value="">All</option>
+                <option value="true" selected="@(published == true)">Published</option>
+                <option value="false" selected="@(published == false)">Draft</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Search</button>
+        <a class="btn btn-ghost" asp-action="Index">Clear</a>
+    </form>
+</div></div>
+<div class="card"><div class="card__body p-0">
+    @if (Model.Items.Any())
+    {
+        <div class="table-wrap"><table class="data-table">
+            <thead><tr><th>Title</th><th>Audience</th><th>Status</th><th>Publish</th><th>Expires</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            @foreach (var a in Model.Items)
+            {
+                <tr>
+                    <td><a class="row-link" asp-action="Details" asp-route-id="@a.Id">@a.Title</a><div class="person__meta">By @a.CreatedByName</div></td>
+                    <td>@(a.Audience == AnnouncementAudience.Department ? $"Department: {a.DepartmentName}" : Ui.Humanize(a.Audience))</td>
+                    <td>@Html.Raw(Ui.PublishedBadge(a.IsPublished))</td>
+                    <td>@(a.PublishAtUtc?.ToString("dd MMM yyyy") ?? "—")</td>
+                    <td>@(a.ExpiresAtUtc?.ToString("dd MMM yyyy") ?? "—")</td>
+                    <td><div class="table-actions">
+                        <a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@a.Id"><i class="bi bi-eye"></i></a>
+                        <a class="btn btn-secondary btn-sm" asp-action="Edit" asp-route-id="@a.Id"><i class="bi bi-pencil"></i></a>
+                    </div></td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+        <partial name="_Pagination" model="PaginationViewModel.From(Model)" />
+    }
+    else { <div class="empty"><i class="bi bi-megaphone"></i><h4>No announcements</h4><p>Publish an announcement to keep your team informed.</p><a class="btn btn-primary" asp-action="Create">New announcement</a></div> }
+</div></div>

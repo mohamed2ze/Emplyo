@@ -1,0 +1,36 @@
+@model IReadOnlyList<DocumentListItemDto>
+@{
+    var canManage = User.IsInRole("Administrator") || User.IsInRole("HRManager");
+}
+@if (Model.Any())
+{
+    <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Title</th><th>Category</th><th>Size</th><th>Expires</th><th>Uploaded</th><th class="text-end">Actions</th></tr></thead>
+        <tbody>
+        @foreach (var d in Model)
+        {
+            <tr>
+                <td>
+                    <i class="bi bi-file-earmark me-1"></i><span class="fw-semibold">@d.Title</span>
+                    @if (d.IsConfidential) { <span class="badge-soft ms-1"><i class="bi bi-lock"></i> Confidential</span> }
+                    <div class="person__meta">@d.OriginalFileName</div>
+                </td>
+                <td>@Ui.Humanize(d.Category)</td>
+                <td>@Ui.FileSize(d.SizeBytes)</td>
+                <td>@(d.ExpirationDate?.ToString("dd MMM yyyy") ?? "—")</td>
+                <td>@d.UploadedAtUtc.ToString("dd MMM yyyy")<div class="person__meta">@d.UploadedByName</div></td>
+                <td><div class="table-actions">
+                    <a class="btn btn-secondary btn-sm" asp-action="Download" asp-route-id="@d.Id"><i class="bi bi-download"></i> Download</a>
+                    @if (canManage)
+                    {
+                        <form asp-action="Delete" asp-route-id="@d.Id" asp-route-employeeId="@d.EmployeeId" method="post" data-confirm="Delete this document?">
+                            <button class="btn btn-danger btn-sm" type="submit"><i class="bi bi-trash"></i></button>
+                        </form>
+                    }
+                </div></td>
+            </tr>
+        }
+        </tbody>
+    </table></div>
+}
+else { <div class="empty"><i class="bi bi-folder2-open"></i><h4>No documents</h4><p>No documents have been uploaded yet.</p></div> }

@@ -1,0 +1,32 @@
+@using Emplyo.Application.Employees
+@model DocumentUploadRequest
+@{
+    var employee = ViewBag.Employee as EmployeeDetailDto;
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="Index">Documents</a><span>/</span>Upload</nav>
+        <h1>Upload document</h1>
+        <p>@employee?.FullName · @employee?.EmployeeNumber</p>
+    </div>
+</div>
+<form asp-action="Upload" asp-route-employeeId="@employee?.Id" method="post" enctype="multipart/form-data">
+    <div class="card"><div class="card__body">
+        <div class="alert alert-info"><i class="bi bi-shield-lock me-1"></i> Files are stored outside the public web root with generated names. Allowed types: PDF, Office documents, images and text, up to 10 MB.</div>
+        <div class="form-grid">
+            <div class="field span-2"><label for="file">File <span class="req">*</span></label><input id="file" name="file" type="file" class="form-control" required /></div>
+            <div class="field"><label for="title">Title</label><input id="title" name="title" class="form-control" placeholder="Defaults to file name" /></div>
+            <div class="field">
+                <label for="category">Category</label>
+                <select id="category" name="category" class="form-select" asp-items="Html.GetEnumSelectList<DocumentCategory>()"></select>
+            </div>
+            <div class="field"><label for="expirationDate">Expiration date</label><input id="expirationDate" name="expirationDate" type="date" class="form-control" /></div>
+            <div class="field"><label class="checkbox"><input id="isConfidential" name="isConfidential" type="checkbox" value="true" /> <span>Confidential (staff only)</span></label></div>
+        </div>
+    </div>
+    <div class="card__head" style="border:none">
+        <a class="btn btn-secondary" asp-action="Index" asp-route-employeeId="@employee?.Id">Cancel</a><span class="spacer"></span>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-upload"></i> Upload</button>
+    </div>
+    </div>
+</form>

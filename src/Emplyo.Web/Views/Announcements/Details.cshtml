@@ -1,0 +1,39 @@
+@model AnnouncementDetailDto
+@{
+    var isStaff = ViewBag.IsStaff as bool? ?? false;
+}
+<div class="page-head">
+    <div class="page-head__text">
+        <nav class="breadcrumb"><a asp-action="Index">Announcements</a><span>/</span>@Model.Title</nav>
+        <h1>@Model.Title</h1>
+        <p>Posted by @Model.CreatedByName on @Tz.ToLocal(Model.PublishAtUtc ?? Model.CreatedAtUtc).ToString("dd MMM yyyy")</p>
+    </div>
+    <div class="page-head__actions">
+        @Html.Raw(Ui.PublishedBadge(Model.IsPublished))
+        @if (isStaff)
+        {
+            <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i> Edit</a>
+            <form asp-action="SetPublished" asp-route-id="@Model.Id" method="post">
+                <input type="hidden" name="published" value="@(!Model.IsPublished)" />
+                <button class="btn @(Model.IsPublished ? "btn-secondary" : "btn-primary")" type="submit">
+                    <i class="bi @(Model.IsPublished ? "bi-archive" : "bi-send")"></i> @(Model.IsPublished ? "Archive" : "Publish")
+                </button>
+            </form>
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" data-confirm="Delete this announcement?">
+                <button class="btn btn-danger" type="submit"><i class="bi bi-trash"></i></button>
+            </form>
+        }
+    </div>
+</div>
+<div class="card">
+    <div class="card__body">
+        <div class="mb-3">
+            <span class="badge-soft"><i class="bi bi-people"></i> @(Model.Audience == AnnouncementAudience.Department ? $"Department: {Model.DepartmentName}" : Ui.Humanize(Model.Audience))</span>
+            @if (Model.ExpiresAtUtc.HasValue)
+            {
+                <span class="badge-soft ms-1"><i class="bi bi-clock"></i> Expires @Model.ExpiresAtUtc.Value.ToString("dd MMM yyyy")</span>
+            }
+        </div>
+        <div style="white-space:pre-wrap;font-size:1rem;line-height:1.7">@Model.Body</div>
+    </div>
+</div>

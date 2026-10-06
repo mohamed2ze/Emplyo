@@ -1,0 +1,39 @@
+@using Emplyo.Application.Employees
+@model IReadOnlyList<DocumentListItemDto>
+@{
+    var employees = ViewBag.Employees as IReadOnlyList<ManagerOptionDto> ?? new List<ManagerOptionDto>();
+    var employeeId = ViewBag.EmployeeId as int?;
+    var employee = ViewBag.Employee as EmployeeDetailDto;
+}
+<div class="page-head">
+    <div class="page-head__text"><h1>Documents</h1><p>Securely stored employee documents. Downloads are authorized per request.</p></div>
+    @if (employee is not null)
+    {
+        <div class="page-head__actions"><a class="btn btn-primary" asp-action="Upload" asp-route-employeeId="@employee.Id"><i class="bi bi-upload"></i> Upload document</a></div>
+    }
+</div>
+
+<div class="card"><div class="card__body">
+    <form method="get" asp-action="Index" class="toolbar">
+        <div class="field grow">
+            <label for="employeeId">Employee</label>
+            <select id="employeeId" name="employeeId" class="form-select" data-auto-submit>
+                <option value="">— Select an employee —</option>
+                @foreach (var e in employees) { <option value="@e.Id" selected="@(employeeId == e.Id)">@e.FullName (@e.EmployeeNumber)</option> }
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> View documents</button>
+    </form>
+</div></div>
+
+@if (employee is null)
+{
+    <div class="card"><div class="card__body"><div class="empty"><i class="bi bi-folder2-open"></i><h4>Select an employee</h4><p>Choose an employee to view and manage their documents.</p></div></div></div>
+}
+else
+{
+    <div class="card">
+        <div class="card__head"><h3>@employee.FullName · documents</h3></div>
+        <div class="card__body p-0"><partial name="_DocumentList" model="Model" /></div>
+    </div>
+}
