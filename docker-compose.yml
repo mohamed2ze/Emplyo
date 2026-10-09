@@ -1,0 +1,45 @@
+# Optional containerized deployment for the Emplyo web application.
+#
+# IMPORTANT: This file does NOT define or own your SQL Server instance.
+# Emplyo connects to the SQL Server already running on your machine (or a
+# managed server) via ConnectionStrings__DefaultConnection.
+#
+# On Linux, the connection string below reaches a SQL Server published on the
+# host's localhost:1433 through the special host-gateway address.
+#
+# Usage:
+#   EMPLYO_DB_PASSWORD='<your-sa-password>' docker compose up --build
+#
+services:
+  emplyo-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: emplyo-web:latest
+    container_name: emplyo-web
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Adjust this to point at your existing SQL Server. Never commit real secrets.
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=Emplyo;User Id=sa;Password=${EMPLYO_DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
+      Organization__TimeZone: "UTC"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Optional: a brand-new SQL Server for isolated environments only.
+  # Do NOT enable this if you already run a usable SQL Server instance.
+  # sqlserver:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     MSSQL_SA_PASSWORD: "${EMPLYO_DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #   ports:
+  #     - "14330:1433"
+  #   volumes:
+  #     - emplyo_sqlserver_data:/var/opt/mssql
+
+# volumes:
+#   emplyo_sqlserver_data:
