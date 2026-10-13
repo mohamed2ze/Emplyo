@@ -83,8 +83,15 @@ public static class CliCommands
     private static async Task SeedDevDataAsync(WebApplication app, string[] args)
     {
         var password = GetOption(args, "--password")
-            ?? Environment.GetEnvironmentVariable("EMPLYO_DEV_PASSWORD")
-            ?? "ChangeMe!12345";
+            ?? Environment.GetEnvironmentVariable("EMPLYO_DEV_PASSWORD");
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            Console.Error.WriteLine(
+                "A password for the demo accounts is required. Provide it via the EMPLYO_DEV_PASSWORD " +
+                "environment variable (recommended) or --password (not recommended: visible in shell history).");
+            return;
+        }
 
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -99,7 +106,7 @@ public static class CliCommands
         await initializer.EnsureDefaultSettingsAsync();
         await initializer.SeedDevelopmentDataAsync(password);
         Console.WriteLine("Development data seeded. Demo accounts: admin@emplyo.local, hr@emplyo.local, manager@emplyo.local, employee@emplyo.local");
-        Console.WriteLine("Demo password source: EMPLYO_DEV_PASSWORD or --password (default only if neither supplied).");
+        Console.WriteLine("Demo accounts use the password supplied via EMPLYO_DEV_PASSWORD.");
     }
 
     private static string? GetOption(string[] args, string name)

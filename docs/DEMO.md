@@ -25,16 +25,15 @@ The seed is **idempotent** (running it again does not duplicate records).
 
 ## 2. Demo accounts
 
-All demo accounts share the same development password:
+All demo accounts share the password supplied through `EMPLYO_DEV_PASSWORD`
+(`Emplyo!Dev2026` in the examples below).
 
-**Password: `Emplyo!Dev2026`**
-
-| Email | Password | Role | Linked employee |
-| --- | --- | --- | --- |
-| `admin@emplyo.local` | `Emplyo!Dev2026` | **Administrator** | — |
-| `hr@emplyo.local` | `Emplyo!Dev2026` | **HR Manager** | Amina Yusuf (EMP-0001) |
-| `manager@emplyo.local` | `Emplyo!Dev2026` | **Employee** | Daniel Okafor (EMP-0002) |
-| `employee@emplyo.local` | `Emplyo!Dev2026` | **Employee** | Lena Haddad (EMP-0003) |
+| Email | Role | Linked employee |
+| --- | --- | --- |
+| `admin@emplyo.local` | **Administrator** | — |
+| `hr@emplyo.local` | **HR Manager** | Amina Yusuf (EMP-0001) |
+| `manager@emplyo.local` | **Employee** | Daniel Okafor (EMP-0002) |
+| `employee@emplyo.local` | **Employee** | Lena Haddad (EMP-0003) |
 
 > These credentials exist **only** for development/demonstration. Never use them
 > in a real deployment. Provision a real administrator with `seed-admin`.
@@ -42,52 +41,77 @@ All demo accounts share the same development password:
 ## 3. Fictional data inventory
 
 ### Departments
-Engineering · Finance · Human Resources · Sales
+Engineering · Sales · Customer Support · Finance · Human Resources
 
 ### Positions
-Software Engineer · Engineering Manager · HR Specialist · Accountant ·
-Sales Representative
+Engineering Manager · Senior Software Engineer · Software Engineer · QA Engineer ·
+Sales Manager · Account Executive · Sales Representative · Support Team Lead ·
+Support Specialist · Finance Manager · Accountant · HR Manager · HR Specialist
 
 ### Employees
 
 | Employee # | Name | Department | Position | Status |
 | --- | --- | --- | --- | --- |
-| EMP-0001 | Amina Yusuf | Human Resources | HR Specialist | Active |
+| EMP-0001 | Amina Yusuf | Human Resources | HR Manager | Active |
 | EMP-0002 | Daniel Okafor | Engineering | Engineering Manager | Active |
 | EMP-0003 | Lena Haddad | Engineering | Software Engineer | Active |
-| EMP-0004 | Marcus Berg | Finance | Accountant | Active |
-| EMP-0005 | Priya Nair | Sales | Sales Representative | Active |
-| EMP-0006 | Tomas Novak | Engineering | Software Engineer | Pending (onboarding) |
+| EMP-0004 | Marcus Berg | Finance | Finance Manager | Active |
+| EMP-0005 | Priya Nair | Sales | Sales Manager | Active |
+| EMP-0006 | Tomas Novak | Engineering | QA Engineer | Pending (onboarding) |
+| EMP-0007 | Sofia Reyes | Customer Support | Support Team Lead | Active |
+| EMP-0008 | Hassan Farouk | Engineering | Senior Software Engineer | On leave |
+| EMP-0009 | Grace Kim | Human Resources | HR Specialist | Active |
+| EMP-0010 | Oliver Smith | Engineering | Software Engineer | Active |
+| EMP-0011 | Fatima Zahra | Finance | Accountant | Active |
+| EMP-0012 | Nikolai Petrov | Engineering | Software Engineer | Active |
+| EMP-0013 | Aisha Bello | Customer Support | Support Specialist | Active (intern) |
+| EMP-0014 | Jakub Kowalski | Engineering | Software Engineer | Active |
+| EMP-0015 | Mei Chen | Sales | Sales Representative | Active (contract) |
+| EMP-0016 | Carlos Mendes | Sales | Account Executive | Active |
+| EMP-0017 | Ingrid Larsen | Customer Support | Support Specialist | Active (part time) |
+| EMP-0018 | Youssef Mansour | Engineering | Software Engineer | Active |
+| EMP-0019 | Elena Popescu | Sales | Sales Representative | Active |
+| EMP-0020 | Ravi Sharma | Engineering | Software Engineer | Terminated |
 
-Daniel Okafor is the manager of the Engineering team.
+Each department has a department head, and employees report to their department
+head. Hire dates span 2018–2026. Some optional fields (phone, address, emergency
+contact, compensation) are intentionally left blank, as in a real directory.
 
 ### Leave types
 | Leave type | Annual entitlement | Paid |
 | --- | --- | --- |
 | Annual Leave | 20 days | Yes |
 | Sick Leave | 10 days | Yes |
-| Personal Leave | 5 days | Yes |
+| Parental Leave | 5 days | Yes |
 | Unpaid Leave | — | No |
 
 ### Holidays (current year)
-New Year's Day · Labour Day · Independence Day · Christmas Day
+New Year's Day · Founders' Day · Summer Bank Holiday · Year-end Closure
 
 ### Sample leave requests (for the workflow demo)
 | Employee | Type | Status | Notes |
 | --- | --- | --- | --- |
-| Lena Haddad (EMP-0003) | Annual Leave | **Approved** | 3 working days; her Annual Leave balance shows 3 used of 20 |
+| Hassan Farouk (EMP-0008) | Annual Leave | **Approved** | Covers the current week; matches his On leave status |
+| Lena Haddad (EMP-0003) | Annual Leave | **Approved** | 5 working days next week; her Annual Leave balance shows the deduction |
 | Daniel Okafor (EMP-0002) | Sick Leave | **Pending** | 2 working days; appears in the HR approval queue |
+| Aisha Bello (EMP-0013) | Annual Leave | **Pending** | 3 working days; second item in the approval queue |
+| Oliver Smith (EMP-0010) | Annual Leave | **Rejected** | Decision comment explains why |
 
 ### Other seeded data
-- ~10 days of sample attendance records per active employee (present/late).
-- One published announcement: **"Welcome to Emplyo"**.
+- ~10 days of sample attendance records per active employee, including remote
+  Fridays for employees whose work location is Remote.
+- Onboarding checklist for Tomas Novak: one completed task, one in progress, two
+  pending.
+- A completed offboarding case for Ravi Sharma with four completed tasks.
+- Two published announcements: head office maintenance and the performance review
+  cycle.
 - Leave balances for the current year for every employee.
 
 ## 4. Suggested presentation walkthrough
 
 ### Step 1 — Employee experience (`employee@emplyo.local`)
-1. Sign in and show the **personal dashboard**: welcome, status, remaining leave
-   days, today's clock-in, recent attendance, leave balances, announcements.
+1. Sign in and show the **personal dashboard**: status, remaining leave days,
+   today's clock-in, recent attendance, leave balances, announcements.
 2. **Clock in** (and clock out) from the dashboard.
 3. Open **My attendance** to show history and the summary.
 4. Open **My leave** → **Request leave**: pick Annual Leave, a future date range,
@@ -98,16 +122,15 @@ New Year's Day · Labour Day · Independence Day · Christmas Day
 ### Step 2 — HR experience (`hr@emplyo.local`)
 1. Sign in and show the **HR dashboard**: headcount, pending leave, attendance today,
    department distribution chart, recent hires, upcoming milestones.
-2. Open **Leave management** → filter **Pending**. Open Daniel's Sick Leave request
-   and **Approve** or **Reject** it. Point out that Lena's approved request already
-   deducted her balance.
+2. Open **Leave management** → filter **Pending**. Approve or reject Daniel's Sick
+   Leave request. Point out that the approved requests already deducted balances.
 3. Open **Employees** and demonstrate **search, filters, sorting and pagination**.
 4. Open an employee → show the profile, restricted compensation field, attendance,
    leave history, and documents.
 5. Open **Onboarding** → **Tomas Novak** and complete a checklist task; show the
    progress bar.
-6. Open **Offboarding** to show the checklist and controlled-termination flow
-   (no need to complete it live).
+6. Open **Offboarding** to show the completed case for Ravi Sharma and the
+   controlled-termination flow.
 7. Open **Reports** → show headcount, leave utilization, attendance report, and
    click a **CSV export**.
 
@@ -132,11 +155,11 @@ New Year's Day · Labour Day · Independence Day · Christmas Day
 
 ## 5. Resetting the demo data
 
-To return to the exact state described above (fictional data only):
+To return to the state described above (fictional data only), remove the workflow
+records and re-seed:
 
 ```bash
-# Optional: remove sample workflow records and re-seed deterministically
-# (run against the Emplyo database with a SQL client)
+# Run against the local Emplyo database with a SQL client
 DELETE FROM LeaveRequests;
 UPDATE LeaveBalances SET Used = 0;
 
