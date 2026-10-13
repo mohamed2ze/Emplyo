@@ -17,11 +17,11 @@
     </div>
 </div>
 
-<div class="grid-3" style="grid-template-columns: 320px 1fr">
+<div class="profile-grid">
     <div>
         <div class="card">
             <div class="card__body text-center">
-                <span class="avatar lg mx-auto mb-3" style="margin:0 auto">
+                <span class="avatar lg mx-auto mb-3">
                     @if (!string.IsNullOrEmpty(e.ProfilePhotoPath))
                     {
                         <img src="@Url.Action("Photo", new { id = e.Id })" alt="" />

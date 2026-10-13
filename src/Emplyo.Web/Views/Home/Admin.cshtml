@@ -21,7 +21,7 @@
     <div class="stat"><div class="stat__icon green"><i class="bi bi-person-check"></i></div><div><div class="stat__value">@Model.ActiveEmployees</div><div class="stat__label">Active</div></div></div>
     <div class="stat"><div class="stat__icon amber"><i class="bi bi-airplane"></i></div><div><div class="stat__value">@Model.OnLeaveCount</div><div class="stat__label">On leave</div></div></div>
     <div class="stat"><div class="stat__icon teal"><i class="bi bi-diagram-3"></i></div><div><div class="stat__value">@Model.DepartmentCount</div><div class="stat__label">Departments</div></div></div>
-    <div class="stat"><div class="stat__icon red"><i class="bi bi-hourglass-split"></i></div><div><div class="stat__value">@Model.PendingLeaveRequests</div><div class="stat__label">Pending leave</div></div></div>
+    <div class="stat"><div class="stat__icon amber"><i class="bi bi-hourglass-split"></i></div><div><div class="stat__value">@Model.PendingLeaveRequests</div><div class="stat__label">Pending leave</div></div></div>
 </div>
 
 <div class="grid-2">
@@ -47,7 +47,7 @@
     </div>
 </div>
 
-<div class="grid-2 mt-0">
+<div class="grid-2">
     <div class="card">
         <div class="card__head"><h3>Recent hires</h3><span class="spacer"></span><a asp-controller="Employees" asp-action="Index" class="small">View all</a></div>
         <div class="card__body p-0">

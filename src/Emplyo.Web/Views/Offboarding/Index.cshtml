@@ -22,7 +22,7 @@
                     <td><a class="row-link" asp-action="Details" asp-route-id="@o.CaseId">@o.EmployeeName</a><div class="person__meta">@o.EmployeeNumber · @(o.DepartmentName ?? "—")</div></td>
                     <td>@o.DepartureDate.ToString("dd MMM yyyy")</td>
                     <td class="text-muted">@o.Reason</td>
-                    <td style="min-width:150px"><div class="progress mb-1"><span style="width:@o.ProgressPercent%"></span></div><span class="text-muted small">@o.CompletedTasks / @o.TotalTasks</span></td>
+                    <td class="cell-progress"><div class="progress mb-1"><span style="width:@o.ProgressPercent%"></span></div><span class="text-muted small">@o.CompletedTasks / @o.TotalTasks</span></td>
                     <td>@Html.Raw(Ui.OffboardingStatusBadge(o.Status))</td>
                     <td><div class="table-actions"><a class="btn btn-secondary btn-sm" asp-action="Details" asp-route-id="@o.CaseId"><i class="bi bi-list-check"></i></a></div></td>
                 </tr>

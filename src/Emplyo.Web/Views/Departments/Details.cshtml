@@ -16,8 +16,8 @@
 <div class="stat-grid mb-4">
     <div class="stat"><div class="stat__icon"><i class="bi bi-people"></i></div><div><div class="stat__value">@Model.EmployeeCount</div><div class="stat__label">Employees</div></div></div>
     <div class="stat"><div class="stat__icon teal"><i class="bi bi-briefcase"></i></div><div><div class="stat__value">@Model.Positions.Count</div><div class="stat__label">Positions</div></div></div>
-    <div class="stat"><div class="stat__icon slate"><i class="bi bi-person-badge"></i></div><div><div class="stat__value" style="font-size:1rem;padding-top:.35rem">@(Model.DepartmentHeadName ?? "—")</div><div class="stat__label">Department head</div></div></div>
-    <div class="stat"><div class="stat__icon @(Model.IsActive ? "green" : "red")"><i class="bi bi-toggle-on"></i></div><div><div class="stat__value" style="font-size:1rem;padding-top:.35rem">@Html.Raw(Ui.ActiveBadge(Model.IsActive))</div><div class="stat__label">Status</div></div></div>
+    <div class="stat"><div class="stat__icon slate"><i class="bi bi-person-badge"></i></div><div><div class="stat__value stat__value--text">@(Model.DepartmentHeadName ?? "—")</div><div class="stat__label">Department head</div></div></div>
+    <div class="stat"><div class="stat__icon slate"><i class="bi bi-toggle-on"></i></div><div><div class="stat__value stat__value--text">@Html.Raw(Ui.ActiveBadge(Model.IsActive))</div><div class="stat__label">Status</div></div></div>
 </div>
 
 <div class="grid-2">

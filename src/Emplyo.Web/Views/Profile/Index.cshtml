@@ -7,10 +7,10 @@
     </div>
 </div>
 
-<div class="grid-3" style="grid-template-columns: 320px 1fr">
+<div class="profile-grid">
     <div class="card">
         <div class="card__body text-center">
-            <span class="avatar lg mb-3" style="margin:0 auto">
+            <span class="avatar lg mb-3 mx-auto">
                 @if (!string.IsNullOrEmpty(Model.ProfilePhotoPath))
                 {
                     <img src="@Url.Action("Photo", "Employees", new { id = Model.Id })" alt="" />

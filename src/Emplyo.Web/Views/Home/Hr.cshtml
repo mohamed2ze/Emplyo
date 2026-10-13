@@ -17,7 +17,7 @@
 <div class="stat-grid mb-4">
     <div class="stat"><div class="stat__icon"><i class="bi bi-people"></i></div><div><div class="stat__value">@Model.Headcount</div><div class="stat__label">Headcount</div></div></div>
     <div class="stat"><div class="stat__icon green"><i class="bi bi-person-check"></i></div><div><div class="stat__value">@Model.ActiveEmployees</div><div class="stat__label">Active</div></div></div>
-    <div class="stat"><div class="stat__icon red"><i class="bi bi-hourglass-split"></i></div><div><div class="stat__value">@Model.PendingLeaveRequests</div><div class="stat__label">Pending leave</div></div></div>
+    <div class="stat"><div class="stat__icon amber"><i class="bi bi-hourglass-split"></i></div><div><div class="stat__value">@Model.PendingLeaveRequests</div><div class="stat__label">Pending leave</div></div></div>
     <div class="stat"><div class="stat__icon teal"><i class="bi bi-person-plus"></i></div><div><div class="stat__value">@Model.NewHiresThisMonth</div><div class="stat__label">Hires this month</div></div></div>
     <div class="stat"><div class="stat__icon slate"><i class="bi bi-clipboard-check"></i></div><div><div class="stat__value">@Model.OnboardingInProgress</div><div class="stat__label">In onboarding</div></div></div>
 </div>
@@ -36,10 +36,10 @@
     <div class="card">
         <div class="card__head"><h3>Attendance today</h3></div>
         <div class="card__body">
-            <div class="stat-grid">
-                <div class="stat"><div class="stat__icon green"><i class="bi bi-check2-circle"></i></div><div><div class="stat__value">@Model.PresentToday</div><div class="stat__label">Present</div></div></div>
-                <div class="stat"><div class="stat__icon amber"><i class="bi bi-clock"></i></div><div><div class="stat__value">@Model.LateToday</div><div class="stat__label">Late</div></div></div>
-                <div class="stat"><div class="stat__icon red"><i class="bi bi-x-circle"></i></div><div><div class="stat__value">@Model.AbsentToday</div><div class="stat__label">Absent</div></div></div>
+            <div class="stat-rows">
+                <div class="stat-row"><span class="stat-row__label">Present</span><span class="stat-row__value">@Model.PresentToday</span></div>
+                <div class="stat-row"><span class="stat-row__label">Late</span><span class="stat-row__value">@Model.LateToday</span></div>
+                <div class="stat-row"><span class="stat-row__label">Absent</span><span class="stat-row__value">@Model.AbsentToday</span></div>
             </div>
             <a class="btn btn-secondary btn-sm mt-3" asp-controller="Attendance" asp-action="Index"><i class="bi bi-clock-history"></i> Attendance records</a>
         </div>

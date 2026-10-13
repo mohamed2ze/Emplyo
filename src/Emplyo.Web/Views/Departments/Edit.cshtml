@@ -5,7 +5,7 @@
 <div class="page-head"><div class="page-head__text"><nav class="breadcrumb"><a asp-action="Index">Departments</a><span>/</span>Edit</nav><h1>Edit department</h1></div></div>
 <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
     <div class="card"><div class="card__body"><partial name="_Form" model="Model" /></div>
-        <div class="card__head" style="border-top:1px solid var(--border);border-bottom:none">
+        <div class="card__foot">
             <a class="btn btn-secondary" asp-action="Details" asp-route-id="@Model.Id">Cancel</a><span class="spacer"></span>
             <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Save changes</button>
         </div>

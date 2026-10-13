@@ -22,7 +22,7 @@
                     <td><a class="row-link" asp-action="Details" asp-route-id="@o.EmployeeId">@o.EmployeeName</a><div class="person__meta">@o.EmployeeNumber · @(o.DepartmentName ?? "—")</div></td>
                     <td>@(o.PositionTitle ?? "—")</td>
                     <td>@o.HireDate.ToString("dd MMM yyyy")</td>
-                    <td style="min-width:160px">
+                    <td class="cell-progress">
                         <div class="progress mb-1"><span style="width:@o.ProgressPercent%"></span></div>
                         <span class="text-muted small">@o.CompletedTasks / @o.TotalTasks tasks (@o.ProgressPercent%)</span>
                     </td>

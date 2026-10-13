@@ -5,7 +5,7 @@
 <div class="page-head"><div class="page-head__text"><nav class="breadcrumb"><a asp-action="Index">Departments</a><span>/</span>Add</nav><h1>Add department</h1></div></div>
 <form asp-action="Create" method="post">
     <div class="card"><div class="card__body"><partial name="_Form" model="Model" /></div>
-        <div class="card__head" style="border-top:1px solid var(--border);border-bottom:none">
+        <div class="card__foot">
             <a class="btn btn-secondary" asp-action="Index">Cancel</a><span class="spacer"></span>
             <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Create</button>
         </div>

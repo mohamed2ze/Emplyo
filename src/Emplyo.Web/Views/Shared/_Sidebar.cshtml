@@ -1,10 +1,10 @@
 @{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     string Active(string c) => string.Equals(controller, c, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    string Current(string c) => string.Equals(controller, c, StringComparison.OrdinalIgnoreCase) ? "page" : "false";
     var isAdmin = User.IsInRole("Administrator");
     var isHr = User.IsInRole("HRManager");
     var staff = isAdmin || isHr;
-    var isEmployeeOnly = !staff;
 }
 <aside class="sidebar">
     <div class="sidebar__brand">
@@ -12,49 +12,49 @@
         <span>Emplyo</span>
     </div>
     <nav class="sidebar__nav">
-        <a class="sidebar__link @Active("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-grid-1x2"></i>Dashboard</a>
+        <a class="sidebar__link @Active("Home")" aria-current="@Current("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-grid-1x2"></i>Dashboard</a>
 
         <div class="sidebar__section">People</div>
         @if (staff)
         {
-            <a class="sidebar__link @Active("Employees")" asp-controller="Employees" asp-action="Index"><i class="bi bi-people"></i>Employees</a>
-            <a class="sidebar__link @Active("Departments")" asp-controller="Departments" asp-action="Index"><i class="bi bi-diagram-3"></i>Departments</a>
-            <a class="sidebar__link @Active("Positions")" asp-controller="Positions" asp-action="Index"><i class="bi bi-briefcase"></i>Positions</a>
+            <a class="sidebar__link @Active("Employees")" aria-current="@Current("Employees")" asp-controller="Employees" asp-action="Index"><i class="bi bi-people"></i>Employees</a>
+            <a class="sidebar__link @Active("Departments")" aria-current="@Current("Departments")" asp-controller="Departments" asp-action="Index"><i class="bi bi-diagram-3"></i>Departments</a>
+            <a class="sidebar__link @Active("Positions")" aria-current="@Current("Positions")" asp-controller="Positions" asp-action="Index"><i class="bi bi-briefcase"></i>Positions</a>
         }
         else
         {
-            <a class="sidebar__link @Active("Profile")" asp-controller="Profile" asp-action="Index"><i class="bi bi-person-badge"></i>My profile</a>
+            <a class="sidebar__link @Active("Profile")" aria-current="@Current("Profile")" asp-controller="Profile" asp-action="Index"><i class="bi bi-person-badge"></i>My profile</a>
         }
 
-        <div class="sidebar__section">Time &amp; Leave</div>
-        <a class="sidebar__link @Active("Attendance")" asp-controller="Attendance" asp-action="@(staff ? "Index" : "My")"><i class="bi bi-clock-history"></i>@(staff ? "Attendance" : "My attendance")</a>
-        <a class="sidebar__link @Active("Leave")" asp-controller="Leave" asp-action="@(staff ? "Index" : "My")"><i class="bi bi-calendar2-check"></i>@(staff ? "Leave management" : "My leave")</a>
-        <a class="sidebar__link @Active("Holidays")" asp-controller="Holidays" asp-action="Index"><i class="bi bi-calendar-heart"></i>Holidays</a>
+        <div class="sidebar__section">Time and leave</div>
+        <a class="sidebar__link @Active("Attendance")" aria-current="@Current("Attendance")" asp-controller="Attendance" asp-action="@(staff ? "Index" : "My")"><i class="bi bi-clock-history"></i>@(staff ? "Attendance" : "My attendance")</a>
+        <a class="sidebar__link @Active("Leave")" aria-current="@Current("Leave")" asp-controller="Leave" asp-action="@(staff ? "Index" : "My")"><i class="bi bi-calendar2-check"></i>@(staff ? "Leave management" : "My leave")</a>
+        <a class="sidebar__link @Active("Holidays")" aria-current="@Current("Holidays")" asp-controller="Holidays" asp-action="Index"><i class="bi bi-calendar-heart"></i>Holidays</a>
 
         @if (staff)
         {
             <div class="sidebar__section">Lifecycle</div>
-            <a class="sidebar__link @Active("Onboarding")" asp-controller="Onboarding" asp-action="Index"><i class="bi bi-person-plus"></i>Onboarding</a>
-            <a class="sidebar__link @Active("Offboarding")" asp-controller="Offboarding" asp-action="Index"><i class="bi bi-person-dash"></i>Offboarding</a>
+            <a class="sidebar__link @Active("Onboarding")" aria-current="@Current("Onboarding")" asp-controller="Onboarding" asp-action="Index"><i class="bi bi-person-plus"></i>Onboarding</a>
+            <a class="sidebar__link @Active("Offboarding")" aria-current="@Current("Offboarding")" asp-controller="Offboarding" asp-action="Index"><i class="bi bi-person-dash"></i>Offboarding</a>
         }
 
         <div class="sidebar__section">Company</div>
-        <a class="sidebar__link @Active("Announcements")" asp-controller="Announcements" asp-action="Index"><i class="bi bi-megaphone"></i>Announcements</a>
-        <a class="sidebar__link @Active("Documents")" asp-controller="Documents" asp-action="@(staff ? "Index" : "My")"><i class="bi bi-folder2-open"></i>Documents</a>
+        <a class="sidebar__link @Active("Announcements")" aria-current="@Current("Announcements")" asp-controller="Announcements" asp-action="Index"><i class="bi bi-megaphone"></i>Announcements</a>
+        <a class="sidebar__link @Active("Documents")" aria-current="@Current("Documents")" asp-controller="Documents" asp-action="@(staff ? "Index" : "My")"><i class="bi bi-folder2-open"></i>Documents</a>
 
         @if (staff)
         {
             <div class="sidebar__section">Insights</div>
-            <a class="sidebar__link @Active("Reports")" asp-controller="Reports" asp-action="Index"><i class="bi bi-bar-chart-line"></i>Reports</a>
+            <a class="sidebar__link @Active("Reports")" aria-current="@Current("Reports")" asp-controller="Reports" asp-action="Index"><i class="bi bi-bar-chart-line"></i>Reports</a>
         }
 
         @if (isAdmin)
         {
             <div class="sidebar__section">Administration</div>
-            <a class="sidebar__link @Active("Users")" asp-controller="Users" asp-action="Index"><i class="bi bi-person-gear"></i>User management</a>
-            <a class="sidebar__link @Active("LeaveTypes")" asp-controller="LeaveTypes" asp-action="Index"><i class="bi bi-tags"></i>Leave types</a>
-            <a class="sidebar__link @Active("Audit")" asp-controller="Audit" asp-action="Index"><i class="bi bi-shield-check"></i>Audit logs</a>
-            <a class="sidebar__link @Active("Settings")" asp-controller="Settings" asp-action="Index"><i class="bi bi-sliders"></i>Settings</a>
+            <a class="sidebar__link @Active("Users")" aria-current="@Current("Users")" asp-controller="Users" asp-action="Index"><i class="bi bi-person-gear"></i>User management</a>
+            <a class="sidebar__link @Active("LeaveTypes")" aria-current="@Current("LeaveTypes")" asp-controller="LeaveTypes" asp-action="Index"><i class="bi bi-tags"></i>Leave types</a>
+            <a class="sidebar__link @Active("Audit")" aria-current="@Current("Audit")" asp-controller="Audit" asp-action="Index"><i class="bi bi-shield-check"></i>Audit logs</a>
+            <a class="sidebar__link @Active("Settings")" aria-current="@Current("Settings")" asp-controller="Settings" asp-action="Index"><i class="bi bi-sliders"></i>Settings</a>
         }
     </nav>
 </aside>

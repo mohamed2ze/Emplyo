@@ -25,7 +25,7 @@
 </div>
 
 <div class="stat-grid mb-4">
-    <div class="stat"><div class="stat__icon"><i class="bi bi-person-badge"></i></div><div><div class="stat__value" style="font-size:1rem;padding-top:.35rem">@Html.Raw(Ui.EmploymentStatusBadge(Model.EmploymentStatus))</div><div class="stat__label">Employment status</div></div></div>
+    <div class="stat"><div class="stat__icon"><i class="bi bi-person-badge"></i></div><div><div class="stat__value stat__value--text">@Html.Raw(Ui.EmploymentStatusBadge(Model.EmploymentStatus))</div><div class="stat__label">Employment status</div></div></div>
     <div class="stat"><div class="stat__icon teal"><i class="bi bi-calendar2-check"></i></div><div><div class="stat__value">@balanceTotal.ToString("0.#")</div><div class="stat__label">Leave days remaining</div></div></div>
     <div class="stat"><div class="stat__icon green"><i class="bi bi-clock"></i></div><div><div class="stat__value">@(today?.ClockInUtc is not null ? Tz.ToLocal(today.ClockInUtc.Value).ToString("HH:mm") : "—")</div><div class="stat__label">Today's clock-in</div></div></div>
     <div class="stat"><div class="stat__icon slate"><i class="bi bi-calendar-event"></i></div><div><div class="stat__value">@Model.HireDate.ToString("dd MMM yyyy")</div><div class="stat__label">Hire date</div></div></div>

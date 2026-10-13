@@ -19,7 +19,7 @@
             <div class="field span-2"><label asp-for="Reason">Reason</label><textarea asp-for="Reason" class="form-control" rows="2" maxlength="500"></textarea></div>
         </div>
     </div>
-    <div class="card__head" style="border:none">
+    <div class="card__foot">
         <a class="btn btn-secondary" asp-controller="Employees" asp-action="Details" asp-route-id="@employee?.Id">Cancel</a><span class="spacer"></span>
         <button class="btn btn-danger" type="submit" data-confirm="Initiate offboarding for this employee?"><i class="bi bi-person-dash"></i> Initiate offboarding</button>
     </div>
