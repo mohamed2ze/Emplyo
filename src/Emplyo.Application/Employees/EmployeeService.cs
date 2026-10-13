@@ -75,8 +75,7 @@ public class EmployeeService : IEmployeeService
                 PositionTitle = e.Position != null ? e.Position.Title : null,
                 Status = e.EmploymentStatus,
                 HireDate = e.HireDate,
-                ProfilePhotoPath = e.ProfilePhotoPath,
-                HasUserAccount = e.UserId != null
+                ProfilePhotoPath = e.ProfilePhotoPath
             })
             .ToListAsync(ct);
 

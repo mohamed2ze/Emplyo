@@ -40,7 +40,7 @@
                     <div class="mb-2"><i class="bi bi-telephone me-2 text-muted"></i>@(e.PhoneNumber ?? "—")</div>
                     <div class="mb-2"><i class="bi bi-geo-alt me-2 text-muted"></i>@(e.WorkLocation ?? "—")</div>
                     <div class="mb-2"><i class="bi bi-person-badge me-2 text-muted"></i>Manager: @(e.ManagerName ?? "—")</div>
-                    <div class="mb-2"><i class="bi bi-calendar-check me-2 text-muted"></i>Hired @e.HireDate.ToString("dd MMM yyyy")</div>
+                    <div class="mb-2"><i class="bi bi-calendar-check me-2 text-muted"></i>Hire date @e.HireDate.ToString("dd MMM yyyy")</div>
                     @if (e.TerminationDate.HasValue)
                     {
                         <div class="mb-2 text-danger"><i class="bi bi-box-arrow-right me-2"></i>Terminated @e.TerminationDate.Value.ToString("dd MMM yyyy")</div>
@@ -99,7 +99,7 @@
                 {
                     <div class="table-wrap">
                         <table class="data-table">
-                            <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Status</th></tr></thead>
+                            <thead><tr><th>Date</th><th>Clock in</th><th>Clock out</th><th>Status</th></tr></thead>
                             <tbody>
                             @foreach (var a in Model.RecentAttendance.Take(8))
                             {

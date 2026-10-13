@@ -21,7 +21,6 @@ public class AuditFilter
     public string? Search { get; set; }
     public string? Action { get; set; }
     public string? TargetType { get; set; }
-    public AuditOutcome? Outcome { get; set; }
     public DateOnly? From { get; set; }
     public DateOnly? To { get; set; }
     public int Page { get; set; } = 1;

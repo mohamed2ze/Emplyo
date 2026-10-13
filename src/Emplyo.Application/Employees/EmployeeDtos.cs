@@ -27,7 +27,6 @@ public class EmployeeListItemDto
     public EmploymentStatus Status { get; set; }
     public DateOnly HireDate { get; set; }
     public string? ProfilePhotoPath { get; set; }
-    public bool HasUserAccount { get; set; }
     public string Initials => string.Concat(
         FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
 }

@@ -421,40 +421,39 @@ public class DatabaseInitializer
         var employees = await _db.Employees
             .Where(e => e.EmploymentStatus == EmploymentStatus.Active)
             .ToListAsync(ct);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var now = DateTime.UtcNow;
+        var today = DateOnly.FromDateTime(now);
 
         foreach (var employee in employees)
         {
-            for (var offset = 1; offset <= 10; offset++)
+            for (var offset = 0; offset <= 10; offset++)
             {
                 var date = today.AddDays(-offset);
                 if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) continue;
+                if (offset == 0 && now.TimeOfDay < new TimeSpan(9, 5, 0)) continue; // Nobody has clocked in yet.
                 if (await _db.AttendanceRecords.AnyAsync(a => a.EmployeeId == employee.Id && a.WorkDate == date, ct)) continue;
 
-                if (employee.WorkLocation == "Remote" && date.DayOfWeek == DayOfWeek.Friday)
-                {
-                    _db.AttendanceRecords.Add(new AttendanceRecord
-                    {
-                        EmployeeId = employee.Id,
-                        WorkDate = date,
-                        ClockInUtc = date.ToDateTime(new TimeOnly(9, 0), DateTimeKind.Utc).AddMinutes(employee.Id % 25),
-                        ClockOutUtc = date.ToDateTime(new TimeOnly(17, 30), DateTimeKind.Utc),
-                        Status = AttendanceStatus.Remote
-                    });
-                    continue;
-                }
-
-                var arrivalOffset = (employee.Id * 7 + date.DayNumber) % 40 - 12;
+                var isRemoteFriday = employee.WorkLocation == "Remote" && date.DayOfWeek == DayOfWeek.Friday;
+                var arrivalOffset = isRemoteFriday ? employee.Id % 25 : (employee.Id * 7 + date.DayNumber) % 40 - 12;
                 var departureOffset = (employee.Id * 11 + date.DayNumber) % 35 - 10;
                 var clockIn = date.ToDateTime(new TimeOnly(9, 0), DateTimeKind.Utc).AddMinutes(arrivalOffset);
                 var clockOut = date.ToDateTime(new TimeOnly(17, 30), DateTimeKind.Utc).AddMinutes(departureOffset);
+
+                if (offset == 0)
+                {
+                    if (clockIn > now) clockIn = now.AddMinutes(-10);
+                    if (now.TimeOfDay < new TimeSpan(17, 35, 0)) clockOut = default;
+                }
+
                 _db.AttendanceRecords.Add(new AttendanceRecord
                 {
                     EmployeeId = employee.Id,
                     WorkDate = date,
                     ClockInUtc = clockIn,
-                    ClockOutUtc = clockOut,
-                    Status = clockIn.TimeOfDay > new TimeSpan(9, 10, 0) ? AttendanceStatus.Late : AttendanceStatus.Present
+                    ClockOutUtc = clockOut == default ? null : clockOut,
+                    Status = isRemoteFriday
+                        ? AttendanceStatus.Remote
+                        : clockIn.TimeOfDay > new TimeSpan(9, 10, 0) ? AttendanceStatus.Late : AttendanceStatus.Present
                 });
             }
         }

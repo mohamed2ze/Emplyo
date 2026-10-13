@@ -28,7 +28,7 @@ dotnet tool install --global dotnet-ef    # ensure ~/.dotnet/tools is on PATH
 dotnet run --project src/Emplyo.Web -- migrate
 
 # 5. Provision the first administrator
-EMPLYO_ADMIN_EMAIL="admin@example.com" EMPLYO_ADMIN_PASSWORD="<strong-pw>" \
+EMPLYO_ADMIN_EMAIL="admin@yourcompany.com" EMPLYO_ADMIN_PASSWORD="<strong-pw>" \
   dotnet run --project src/Emplyo.Web -- seed-admin
 
 # 6. (Optional) seed fictional development data

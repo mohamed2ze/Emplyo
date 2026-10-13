@@ -1,7 +1,5 @@
 @{
-    ViewData["Title"] = "Error";
     var code = ViewData["Code"] as int? ?? (Context.Request.Query["code"].ToString() is { Length: > 0 } c && int.TryParse(c, out var parsed) ? parsed : 500);
-    var title = ViewData["Title"] as string;
     var message = ViewData["Message"] as string;
     var heading = code switch
     {
@@ -12,6 +10,7 @@
         500 => "Unable to load this page",
         _ => "Unexpected status"
     };
+    ViewData["Title"] = heading;
     var detail = message ?? code switch
     {
         400 => "The request could not be processed as submitted. Check the address and the data you sent, then try again.",

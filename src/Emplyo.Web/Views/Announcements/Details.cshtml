@@ -29,7 +29,7 @@
 <div class="card">
     <div class="card__body">
         <div class="mb-3">
-            <span class="badge-soft"><i class="bi bi-people"></i> @(Model.Audience == AnnouncementAudience.Department ? $"Department: {Model.DepartmentName}" : Ui.Humanize(Model.Audience))</span>
+            <span class="badge-soft"><i class="bi bi-people"></i> @(Model.Audience == AnnouncementAudience.Department ? $"Department: {Model.DepartmentName}" : Ui.AnnouncementAudienceLabel(Model.Audience))</span>
             @if (Model.ExpiresAtUtc.HasValue)
             {
                 <span class="badge-soft ms-1"><i class="bi bi-clock"></i> Expires @Model.ExpiresAtUtc.Value.ToString("dd MMM yyyy")</span>

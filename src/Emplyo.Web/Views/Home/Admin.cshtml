@@ -2,7 +2,7 @@
 @{
     var chartLabels = Model.HeadcountByDepartment.Select(d => d.DepartmentName).ToList();
     var chartValues = Model.HeadcountByDepartment.Select(d => d.TotalCount).ToList();
-    var statusLabels = Model.StatusSummary.Select(s => s.Status.ToString()).ToList();
+    var statusLabels = Model.StatusSummary.Select(s => Ui.Humanize(s.Status)).ToList();
     var statusValues = Model.StatusSummary.Select(s => s.Count).ToList();
 }
 <div class="page-head">

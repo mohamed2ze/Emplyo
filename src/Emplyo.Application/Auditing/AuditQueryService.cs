@@ -26,8 +26,6 @@ public class AuditQueryService : IAuditQueryService
             query = query.Where(a => a.Action == filter.Action);
         if (!string.IsNullOrWhiteSpace(filter.TargetType))
             query = query.Where(a => a.TargetType == filter.TargetType);
-        if (filter.Outcome.HasValue)
-            query = query.Where(a => a.Outcome == filter.Outcome);
         if (filter.From.HasValue)
         {
             var from = filter.From.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);

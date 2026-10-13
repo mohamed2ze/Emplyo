@@ -104,7 +104,6 @@ public class AttendanceService : IAttendanceService
 
         return new TodayAttendanceDto
         {
-            RecordId = record?.Id,
             WorkDate = workDate,
             ClockInUtc = record?.ClockInUtc,
             ClockOutUtc = record?.ClockOutUtc,
@@ -258,12 +257,8 @@ public class AttendanceService : IAttendanceService
 
         return new AttendanceSummaryDto
         {
-            TotalDays = records.Count,
             PresentDays = records.Count(r => r.Status == AttendanceStatus.Present),
             LateDays = records.Count(r => r.Status == AttendanceStatus.Late),
-            AbsentDays = records.Count(r => r.Status == AttendanceStatus.Absent),
-            RemoteDays = records.Count(r => r.Status == AttendanceStatus.Remote),
-            LeaveDays = records.Count(r => r.Status == AttendanceStatus.OnLeave),
             TotalWorkedHours = Math.Round(records
                 .Where(r => r.ClockInUtc.HasValue && r.ClockOutUtc.HasValue)
                 .Sum(r => (r.ClockOutUtc!.Value - r.ClockInUtc!.Value).TotalHours), 2)

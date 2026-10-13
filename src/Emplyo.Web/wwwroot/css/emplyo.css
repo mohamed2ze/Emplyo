@@ -278,7 +278,7 @@ button, input, select, textarea, a {
 .error-page--compact { min-height: 60vh; }
 .prose { white-space: pre-wrap; font-size: var(--font-size-lg); line-height: 1.6; }
 
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--space-4); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); }
 .stat {
     background: var(--color-bg-surface);
     border: 1px solid var(--color-border-default);
@@ -481,6 +481,7 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: var(--font
 @media (max-width: 576px) {
     .content { padding: var(--space-4); }
     .page-head__actions { width: 100%; }
+    .topbar__title { display: none; }
 }
 
 .auth-wrap { min-height: 100vh; display: grid; place-items: center; background: var(--color-brand-navy); padding: var(--space-6); }

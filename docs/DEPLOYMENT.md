@@ -19,12 +19,12 @@ export ASPNETCORE_ENVIRONMENT=Production
 export ConnectionStrings__DefaultConnection="Server=<host>,1433;Database=Emplyo;User Id=<user>;Password=<pw>;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
 export Storage__DocumentsRoot="/var/lib/emplyo/documents"
 export Email__Enabled="true"
-export Email__Host="smtp.example.com"
+export Email__Host="smtp.yourcompany.com"
 export Email__Port="587"
 export Email__UseSsl="true"
 export Email__UserName="<user>"
 export Email__Password="<pw>"
-export Email__FromAddress="no-reply@example.com"
+export Email__FromAddress="no-reply@yourcompany.com"
 export Email__FromName="Emplyo"
 ```
 
@@ -38,7 +38,7 @@ from the **Settings** page after the administrator has signed in.
 dotnet run --project src/Emplyo.Web -- migrate
 
 # Provision the first administrator
-EMPLYO_ADMIN_EMAIL="admin@example.com" EMPLYO_ADMIN_PASSWORD="<strong-pw>" \
+EMPLYO_ADMIN_EMAIL="admin@yourcompany.com" EMPLYO_ADMIN_PASSWORD="<strong-pw>" \
   dotnet run --project src/Emplyo.Web -- seed-admin
 ```
 

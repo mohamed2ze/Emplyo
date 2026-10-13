@@ -79,39 +79,36 @@ public class ReportService : IReportService
         if (departmentId.HasValue)
             query = query.Where(a => a.Employee.DepartmentId == departmentId);
 
-        var grouped = await query
-            .GroupBy(a => new
+        // Aggregated in memory: the SQL Server provider cannot translate this GroupBy shape.
+        var rows = await query
+            .Select(a => new
             {
                 a.EmployeeId,
-                Name = a.Employee.FirstName + " " + a.Employee.LastName,
+                EmployeeName = a.Employee.FirstName + " " + a.Employee.LastName,
                 a.Employee.EmployeeNumber,
-                Department = a.Employee.Department != null ? a.Employee.Department.Name : null
+                DepartmentName = a.Employee.Department != null ? a.Employee.Department.Name : null,
+                a.Status,
+                a.ClockInUtc,
+                a.ClockOutUtc
             })
+            .ToListAsync(ct);
+
+        return rows
+            .GroupBy(a => new { a.EmployeeId, a.EmployeeName, a.EmployeeNumber, a.DepartmentName })
             .Select(g => new AttendanceReportRowDto
             {
-                EmployeeName = g.Key.Name,
+                EmployeeName = g.Key.EmployeeName,
                 EmployeeNumber = g.Key.EmployeeNumber,
-                DepartmentName = g.Key.Department,
+                DepartmentName = g.Key.DepartmentName,
                 PresentDays = g.Count(a => a.Status == AttendanceStatus.Present),
                 LateDays = g.Count(a => a.Status == AttendanceStatus.Late),
                 AbsentDays = g.Count(a => a.Status == AttendanceStatus.Absent),
                 RemoteDays = g.Count(a => a.Status == AttendanceStatus.Remote),
-                TotalHours = g.Where(a => a.ClockInUtc != null && a.ClockOutUtc != null)
-                    .Sum(a => (a.ClockOutUtc!.Value - a.ClockInUtc!.Value).TotalHours)
+                TotalHours = Math.Round(g.Where(a => a.ClockInUtc != null && a.ClockOutUtc != null)
+                    .Sum(a => (a.ClockOutUtc!.Value - a.ClockInUtc!.Value).TotalHours), 2)
             })
-            .ToListAsync(ct);
-
-        return grouped.Select(r => new AttendanceReportRowDto
-        {
-            EmployeeName = r.EmployeeName,
-            EmployeeNumber = r.EmployeeNumber,
-            DepartmentName = r.DepartmentName,
-            PresentDays = r.PresentDays,
-            LateDays = r.LateDays,
-            AbsentDays = r.AbsentDays,
-            RemoteDays = r.RemoteDays,
-            TotalHours = Math.Round(r.TotalHours, 2)
-        }).ToList();
+            .OrderBy(r => r.EmployeeName)
+            .ToList();
     }
 
     public async Task<IReadOnlyList<RecentHireDto>> GetRecentHiresAsync(int count, CancellationToken ct = default)

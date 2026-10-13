@@ -54,18 +54,13 @@ public class AttendanceCorrectionDto
 
 public class AttendanceSummaryDto
 {
-    public int TotalDays { get; set; }
     public int PresentDays { get; set; }
     public int LateDays { get; set; }
-    public int AbsentDays { get; set; }
-    public int RemoteDays { get; set; }
-    public int LeaveDays { get; set; }
     public double TotalWorkedHours { get; set; }
 }
 
 public class TodayAttendanceDto
 {
-    public int? RecordId { get; set; }
     public DateOnly WorkDate { get; set; }
     public DateTime? ClockInUtc { get; set; }
     public DateTime? ClockOutUtc { get; set; }

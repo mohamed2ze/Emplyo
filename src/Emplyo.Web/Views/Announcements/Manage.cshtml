@@ -32,7 +32,7 @@
             {
                 <tr>
                     <td><a class="row-link" asp-action="Details" asp-route-id="@a.Id">@a.Title</a><div class="person__meta">By @a.CreatedByName</div></td>
-                    <td>@(a.Audience == AnnouncementAudience.Department ? $"Department: {a.DepartmentName}" : Ui.Humanize(a.Audience))</td>
+                    <td>@(a.Audience == AnnouncementAudience.Department ? $"Department: {a.DepartmentName}" : Ui.AnnouncementAudienceLabel(a.Audience))</td>
                     <td>@Html.Raw(Ui.PublishedBadge(a.IsPublished))</td>
                     <td>@(a.PublishAtUtc?.ToString("dd MMM yyyy") ?? "—")</td>
                     <td>@(a.ExpiresAtUtc?.ToString("dd MMM yyyy") ?? "—")</td>
