@@ -24,19 +24,13 @@ public interface IIdentityService
     Task<CreateUserResult> CreateUserAsync(string email, string displayName, string password,
         IReadOnlyCollection<string> roles, int? employeeId, CancellationToken ct = default);
 
-    Task<AppUserInfo?> FindByEmailAsync(string email, CancellationToken ct = default);
     Task<AppUserInfo?> FindByIdAsync(string userId, CancellationToken ct = default);
     Task<IReadOnlyList<AppUserInfo>> SearchUsersAsync(string? query, CancellationToken ct = default);
     Task<IReadOnlyList<AppUserInfo>> GetUsersInRoleAsync(string role, CancellationToken ct = default);
 
     Task SetRolesAsync(string userId, IReadOnlyCollection<string> roles, CancellationToken ct = default);
-    Task<IReadOnlyList<string>> GetRolesAsync(string userId, CancellationToken ct = default);
     Task<bool> ResetPasswordAsync(string userId, string newPassword, CancellationToken ct = default);
     Task SetActiveAsync(string userId, bool isActive, CancellationToken ct = default);
-    Task<bool> AddToRoleAsync(string userId, string role, CancellationToken ct = default);
-    Task<bool> HasAnyUserAsync(CancellationToken ct = default);
-    Task<string?> GeneratePasswordResetTokenAsync(string userId, CancellationToken ct = default);
-    Task<bool> ResetPasswordWithTokenAsync(string userId, string token, string newPassword, CancellationToken ct = default);
     Task RecordLoginAsync(string userId, CancellationToken ct = default);
 }
 

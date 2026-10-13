@@ -11,13 +11,11 @@ namespace Emplyo.Web.Controllers;
 public class DepartmentsController : Controller
 {
     private readonly IDepartmentService _departments;
-    private readonly IPositionService _positions;
     private readonly IEmployeeService _employees;
 
-    public DepartmentsController(IDepartmentService departments, IPositionService positions, IEmployeeService employees)
+    public DepartmentsController(IDepartmentService departments, IEmployeeService employees)
     {
         _departments = departments;
-        _positions = positions;
         _employees = employees;
     }
 

@@ -19,7 +19,4 @@ public static class EmploymentStatusPolicy
 
     public static bool CanTransition(EmploymentStatus from, EmploymentStatus to)
         => from == to || (Transitions.TryGetValue(from, out var allowed) && allowed.Contains(to));
-
-    public static IReadOnlyList<EmploymentStatus> AllowedTargets(EmploymentStatus from)
-        => Transitions.TryGetValue(from, out var allowed) ? allowed : Array.Empty<EmploymentStatus>();
 }

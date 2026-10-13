@@ -52,6 +52,25 @@ public class LeaveServiceTests
     }
 
     [Fact]
+    public async Task Submit_allows_unpaid_leave_without_balance()
+    {
+        using var db = TestDb.Create();
+        var type = await Seed.LeaveTypeAsync(db, name: "Unpaid Leave", entitlement: 0, isPaid: false);
+        var employee = await Seed.EmployeeAsync(db);
+        var service = Create(db, new FakeCurrentUser(), new FakeClock());
+
+        var id = await service.SubmitAsync(employee.Id, new LeaveRequestFormDto
+        {
+            LeaveTypeId = type.Id,
+            StartDate = new DateOnly(2026, 7, 1),
+            EndDate = new DateOnly(2026, 7, 3)
+        });
+
+        var request = await service.GetByIdAsync(id);
+        Assert.Equal(3m, request!.TotalDays);
+    }
+
+    [Fact]
     public async Task Submit_rejects_overlapping_request()
     {
         using var db = TestDb.Create();

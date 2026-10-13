@@ -63,9 +63,6 @@ public class AppSettingsService : IAppSettingsService
         }
     }
 
-    public Task<string> GetOrganizationNameAsync(CancellationToken ct = default)
-        => GetAsync(OrganizationNameKey, "Emplyo", ct);
-
     public async Task<IReadOnlyList<(string Key, string Value, string? Description)>> GetAllAsync(CancellationToken ct = default)
     {
         var settings = await _db.AppSettings.AsNoTracking().OrderBy(s => s.Key)

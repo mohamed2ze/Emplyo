@@ -9,18 +9,17 @@ namespace Emplyo.UnitTests;
 public class EmployeeServiceTests
 {
     private static EmployeeService CreateService(AppDbContextHolder holder)
-        => new(holder.Db, new FakeAudit(), holder.User, holder.Clock);
+        => new(holder.Db, new FakeAudit(), holder.Clock);
 
     private sealed class AppDbContextHolder : IDisposable
     {
         public required Emplyo.Infrastructure.Persistence.AppDbContext Db { get; init; }
-        public required FakeCurrentUser User { get; init; }
         public required FakeClock Clock { get; init; }
         public void Dispose() => Db.Dispose();
     }
 
     private static AppDbContextHolder NewHolder()
-        => new() { Db = TestDb.Create(), User = new FakeCurrentUser(), Clock = new FakeClock() };
+        => new() { Db = TestDb.Create(), Clock = new FakeClock() };
 
     private static EmployeeFormDto ValidForm(string number = "EMP-1000", string email = "new@test.local") => new()
     {

@@ -13,7 +13,6 @@ public class CurrentUserService : ICurrentUserService
 
     public string? UserId => Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    public string? UserName => Principal?.Identity?.Name;
 
     public string DisplayName =>
         Principal?.FindFirst("display_name")?.Value
@@ -25,7 +24,6 @@ public class CurrentUserService : ICurrentUserService
 
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated ?? false;
 
-    public bool IsInRole(string role) => Principal?.IsInRole(role) ?? false;
 
     public IReadOnlyCollection<string> Roles =>
         Principal?.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList() ?? (IReadOnlyCollection<string>)Array.Empty<string>();

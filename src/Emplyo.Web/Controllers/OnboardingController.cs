@@ -11,12 +11,10 @@ namespace Emplyo.Web.Controllers;
 public class OnboardingController : Controller
 {
     private readonly ILifecycleService _lifecycle;
-    private readonly IEmployeeService _employees;
 
-    public OnboardingController(ILifecycleService lifecycle, IEmployeeService employees)
+    public OnboardingController(ILifecycleService lifecycle)
     {
         _lifecycle = lifecycle;
-        _employees = employees;
     }
 
     public async Task<IActionResult> Index(string? search, int page = 1, int pageSize = 15, CancellationToken ct = default)

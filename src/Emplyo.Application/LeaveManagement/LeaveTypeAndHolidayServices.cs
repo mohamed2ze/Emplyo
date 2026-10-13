@@ -190,11 +190,4 @@ public class HolidayService : IHolidayService
         await _db.SaveChangesAsync(ct);
         await _audit.RecordAsync(new AuditEntry { Action = "Holiday.Deleted", TargetType = nameof(Holiday), TargetId = id.ToString() }, ct);
     }
-
-    public async Task<IReadOnlyList<DateOnly>> GetHolidayDatesAsync(DateOnly from, DateOnly to, CancellationToken ct = default)
-    {
-        var holidays = await _db.Holidays.AsNoTracking()
-            .Where(h => h.Date >= from && h.Date <= to).Select(h => h.Date).ToListAsync(ct);
-        return holidays;
-    }
 }

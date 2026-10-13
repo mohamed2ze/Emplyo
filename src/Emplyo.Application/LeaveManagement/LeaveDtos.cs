@@ -148,7 +148,6 @@ public interface ILeaveService
     Task CancelAsync(int id, int? actingEmployeeId, bool isPrivileged, CancellationToken ct = default);
     Task<IReadOnlyList<LeaveBalanceDto>> GetBalancesAsync(int employeeId, int? year = null, CancellationToken ct = default);
     Task<int> GetPendingCountAsync(int? employeeId = null, CancellationToken ct = default);
-    Task<int> GetPendingCountForManagerAsync(int managerEmployeeId, CancellationToken ct = default);
 }
 
 public interface ILeaveTypeService
@@ -168,5 +167,4 @@ public interface IHolidayService
     Task<int> CreateAsync(HolidayFormDto dto, CancellationToken ct = default);
     Task UpdateAsync(int id, HolidayFormDto dto, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
-    Task<IReadOnlyList<DateOnly>> GetHolidayDatesAsync(DateOnly from, DateOnly to, CancellationToken ct = default);
 }

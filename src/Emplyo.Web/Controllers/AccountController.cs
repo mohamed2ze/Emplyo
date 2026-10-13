@@ -54,22 +54,19 @@ public class AccountController : Controller
     private readonly IIdentityService _identity;
     private readonly IAppEmailSender _email;
     private readonly ILogger<AccountController> _logger;
-    private readonly IAppSettingsService _settings;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
         IIdentityService identity,
         IAppEmailSender email,
-        ILogger<AccountController> logger,
-        IAppSettingsService settings)
+        ILogger<AccountController> logger)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _identity = identity;
         _email = email;
         _logger = logger;
-        _settings = settings;
     }
 
     [HttpGet]

@@ -36,9 +36,9 @@ public class IdentityService : IIdentityService
             CreatedAtUtc = DateTime.UtcNow
         };
 
-        var result = await _userManager.CreateAsync(user, password);
-        if (!result.Succeeded)
-            return new CreateUserResult { Succeeded = false, Errors = result.Errors.Select(e => e.Description).ToList() };
+        var createResult = await _userManager.CreateAsync(user, password);
+        if (!createResult.Succeeded)
+            return new CreateUserResult { Succeeded = false, Errors = createResult.Errors.Select(e => e.Description).ToList() };
 
         var assignResult = await _userManager.AddToRolesAsync(user, roles);
         if (!assignResult.Succeeded)
@@ -48,12 +48,6 @@ public class IdentityService : IIdentityService
         }
 
         return new CreateUserResult { Succeeded = true, UserId = user.Id };
-    }
-
-    public async Task<AppUserInfo?> FindByEmailAsync(string email, CancellationToken ct = default)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-        return user is null ? null : await MapAsync(user);
     }
 
     public async Task<AppUserInfo?> FindByIdAsync(string userId, CancellationToken ct = default)
@@ -72,23 +66,23 @@ public class IdentityService : IIdentityService
         }
 
         var users = await usersQuery.OrderBy(u => u.DisplayName).ToListAsync(ct);
-        var result = new List<AppUserInfo>(users.Count);
+        var userInfos = new List<AppUserInfo>(users.Count);
         foreach (var user in users)
         {
-            result.Add(await MapAsync(user));
+            userInfos.Add(await MapAsync(user));
         }
-        return result;
+        return userInfos;
     }
 
     public async Task<IReadOnlyList<AppUserInfo>> GetUsersInRoleAsync(string role, CancellationToken ct = default)
     {
         var users = await _userManager.GetUsersInRoleAsync(role);
-        var result = new List<AppUserInfo>(users.Count);
+        var userInfos = new List<AppUserInfo>(users.Count);
         foreach (var user in users.Where(u => u.IsActive))
         {
-            result.Add(await MapAsync(user));
+            userInfos.Add(await MapAsync(user));
         }
-        return result;
+        return userInfos;
     }
 
     public async Task SetRolesAsync(string userId, IReadOnlyCollection<string> roles, CancellationToken ct = default)
@@ -104,20 +98,14 @@ public class IdentityService : IIdentityService
         if (toAdd.Count > 0) await _userManager.AddToRolesAsync(user, toAdd);
     }
 
-    public async Task<IReadOnlyList<string>> GetRolesAsync(string userId, CancellationToken ct = default)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        return user is null ? Array.Empty<string>() : (await _userManager.GetRolesAsync(user)).ToList();
-    }
-
     public async Task<bool> ResetPasswordAsync(string userId, string newPassword, CancellationToken ct = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null) return false;
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-        return result.Succeeded;
+        var resetResult = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        return resetResult.Succeeded;
     }
 
     public async Task SetActiveAsync(string userId, bool isActive, CancellationToken ct = default)
@@ -136,34 +124,6 @@ public class IdentityService : IIdentityService
             user.LockoutEnabled = true;
         }
         await _userManager.UpdateAsync(user);
-    }
-
-    public async Task<bool> AddToRoleAsync(string userId, string role, CancellationToken ct = default)
-    {
-        if (!await _roleManager.RoleExistsAsync(role))
-            await _roleManager.CreateAsync(new IdentityRole(role));
-
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user is null) return false;
-        var result = await _userManager.AddToRoleAsync(user, role);
-        return result.Succeeded;
-    }
-
-    public Task<bool> HasAnyUserAsync(CancellationToken ct = default)
-        => _db.Users.AnyAsync(ct);
-
-    public async Task<string?> GeneratePasswordResetTokenAsync(string userId, CancellationToken ct = default)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        return user is null ? null : await _userManager.GeneratePasswordResetTokenAsync(user);
-    }
-
-    public async Task<bool> ResetPasswordWithTokenAsync(string userId, string token, string newPassword, CancellationToken ct = default)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user is null) return false;
-        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-        return result.Succeeded;
     }
 
     public async Task RecordLoginAsync(string userId, CancellationToken ct = default)

@@ -22,13 +22,3 @@ public class PaginationViewModel
             Action = action
         };
 }
-
-public class ConfirmActionViewModel
-{
-    public string Action { get; init; } = string.Empty;
-    public string Controller { get; init; } = string.Empty;
-    public string Label { get; init; } = string.Empty;
-    public string ConfirmMessage { get; init; } = "Are you sure?";
-    public string CssClass { get; init; } = "btn-danger";
-    public Dictionary<string, string> RouteValues { get; init; } = new();
-}

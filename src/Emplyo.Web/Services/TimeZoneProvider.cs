@@ -30,6 +30,8 @@ public class TimeZoneProvider
             }
             catch
             {
+                // The settings table may be unreachable (for example during startup or a
+                // database outage). Keep the last known zone and retry within a minute.
                 _loadedAt = DateTime.UtcNow.AddMinutes(-4);
             }
         }

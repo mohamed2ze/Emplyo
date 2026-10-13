@@ -30,13 +30,6 @@ public static class TestData
         return await db.Employees.AnyAsync(e => e.EmployeeNumber == number);
     }
 
-    public static async Task<T?> WithDbAsync<TSvc, T>(EmplyoWebAppFactory factory, Func<AppDbContext, Task<T>> action)
-    {
-        using var scope = ScopeFactory(factory).CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        return await action(db);
-    }
-
     public static async Task<(int? Id, int EmployeeId)> AnotherEmployeesPendingLeaveAsync(EmplyoWebAppFactory factory)
     {
         using var scope = ScopeFactory(factory).CreateScope();

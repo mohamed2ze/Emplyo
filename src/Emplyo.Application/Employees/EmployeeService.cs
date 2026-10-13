@@ -12,15 +12,12 @@ public class EmployeeService : IEmployeeService
 {
     private readonly IApplicationDbContext _db;
     private readonly IAuditService _audit;
-    private readonly ICurrentUserService _currentUser;
     private readonly IDateTimeProvider _clock;
 
-    public EmployeeService(IApplicationDbContext db, IAuditService audit,
-        ICurrentUserService currentUser, IDateTimeProvider clock)
+    public EmployeeService(IApplicationDbContext db, IAuditService audit, IDateTimeProvider clock)
     {
         _db = db;
         _audit = audit;
-        _currentUser = currentUser;
         _clock = clock;
     }
 
@@ -93,17 +90,6 @@ public class EmployeeService : IEmployeeService
             .Include(e => e.Position)
             .Include(e => e.Manager)
             .Where(e => e.Id == id)
-            .Select(e => MapDetail(e))
-            .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<EmployeeDetailDto?> GetByUserIdAsync(string userId, CancellationToken ct = default)
-    {
-        return await _db.Employees.AsNoTracking()
-            .Include(e => e.Department)
-            .Include(e => e.Position)
-            .Include(e => e.Manager)
-            .Where(e => e.UserId == userId)
             .Select(e => MapDetail(e))
             .FirstOrDefaultAsync(ct);
     }
@@ -289,9 +275,6 @@ public class EmployeeService : IEmployeeService
         var normalized = workEmail.Trim().ToLowerInvariant();
         return _db.Employees.AnyAsync(e => e.WorkEmail == normalized && (!excludeId.HasValue || e.Id != excludeId), ct);
     }
-
-    public async Task<DateOnly> GetHireDateAsync(int id, CancellationToken ct = default)
-        => await _db.Employees.Where(e => e.Id == id).Select(e => e.HireDate).FirstOrDefaultAsync(ct);
 
     private async Task ValidateAsync(EmployeeFormDto dto, int? excludeId, CancellationToken ct)
     {

@@ -25,12 +25,10 @@ public class FakeClock : IDateTimeProvider
 public class FakeCurrentUser : ICurrentUserService
 {
     public string? UserId { get; set; } = "user-1";
-    public string? UserName { get; set; } = "user@test";
     public string DisplayName { get; set; } = "Test User";
     public int? EmployeeId { get; set; }
     public bool IsAuthenticated { get; set; } = true;
     public string[] RoleList { get; set; } = Array.Empty<string>();
-    public bool IsInRole(string role) => RoleList.Contains(role);
     public IReadOnlyCollection<string> Roles => RoleList;
 }
 
@@ -58,16 +56,15 @@ public class FakeSettings : IAppSettingsService
     public Task<string> GetAsync(string key, string defaultValue, CancellationToken ct = default) => Task.FromResult(defaultValue);
     public Task SetAsync(string key, string value, string? description = null, CancellationToken ct = default) => Task.CompletedTask;
     public Task<TimeZoneInfo> GetOrganizationTimeZoneAsync(CancellationToken ct = default) => Task.FromResult(TimeZoneInfo.Utc);
-    public Task<string> GetOrganizationNameAsync(CancellationToken ct = default) => Task.FromResult("Emplyo");
     public Task<IReadOnlyList<(string Key, string Value, string? Description)>> GetAllAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<(string, string, string?)>>(Array.Empty<(string, string, string?)>());
 }
 
 public static class Seed
 {
-    public static async Task<LeaveType> LeaveTypeAsync(AppDbContext db, string name = "Annual Leave", decimal entitlement = 20)
+    public static async Task<LeaveType> LeaveTypeAsync(AppDbContext db, string name = "Annual Leave", decimal entitlement = 20, bool isPaid = true)
     {
-        var type = new LeaveType { Name = name, IsPaid = true, DefaultAnnualEntitlement = entitlement, IsActive = true };
+        var type = new LeaveType { Name = name, IsPaid = isPaid, DefaultAnnualEntitlement = entitlement, IsActive = true };
         db.LeaveTypes.Add(type);
         await db.SaveChangesAsync();
         return type;

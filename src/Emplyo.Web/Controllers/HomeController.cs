@@ -11,13 +11,11 @@ public class HomeController : Controller
 {
     private readonly IDashboardService _dashboard;
     private readonly ICurrentUserService _currentUser;
-    private readonly ILogger<HomeController> _logger;
 
-    public HomeController(IDashboardService dashboard, ICurrentUserService currentUser, ILogger<HomeController> logger)
+    public HomeController(IDashboardService dashboard, ICurrentUserService currentUser)
     {
         _dashboard = dashboard;
         _currentUser = currentUser;
-        _logger = logger;
     }
 
     public async Task<IActionResult> Index(CancellationToken ct)

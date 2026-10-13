@@ -149,11 +149,7 @@ public class LeaveService : ILeaveService
         var balance = await _db.LeaveBalances
             .FirstOrDefaultAsync(b => b.EmployeeId == employeeId && b.LeaveTypeId == leaveType.Id && b.Year == year, ct);
 
-        if (leaveType.DefaultAnnualEntitlement > 0 && !leaveType.IsPaid)
-        {
-            // Unpaid leave does not consume a paid balance; no balance check required.
-        }
-        else if (balance is not null && balance.Remaining < totalDays)
+        if (leaveType.IsPaid && balance is not null && balance.Remaining < totalDays)
         {
             throw new BusinessRuleException(
                 $"Insufficient {leaveType.Name} balance. Available: {balance.Remaining} day(s), requested: {totalDays}.");
@@ -329,12 +325,6 @@ public class LeaveService : ILeaveService
         => _db.LeaveRequests.CountAsync(l => l.Status == LeaveRequestStatus.Pending
             && (!employeeId.HasValue || l.EmployeeId == employeeId), ct);
 
-    public async Task<int> GetPendingCountForManagerAsync(int managerEmployeeId, CancellationToken ct = default)
-    {
-        return await _db.LeaveRequests.CountAsync(l => l.Status == LeaveRequestStatus.Pending
-            && l.Employee.ManagerId == managerEmployeeId, ct);
-    }
-
     private bool IsSelf(string? ownerUserId)
         => !string.IsNullOrEmpty(ownerUserId) && ownerUserId == _currentUser.UserId;
 
@@ -357,6 +347,8 @@ public class LeaveService : ILeaveService
             };
             _db.LeaveBalances.Add(balance);
         }
+
+        if (!request.LeaveType.IsPaid) return;
 
         if (deduct)
         {
