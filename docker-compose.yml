@@ -22,8 +22,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       # Adjust this to point at your existing SQL Server. Never commit real secrets.
-      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=Emplyo;User Id=sa;Password=${EMPLYO_DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
-      Organization__TimeZone: "UTC"
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=Emplyo;User Id=sa;Password=${EMPLYO_DB_PASSWORD:?set EMPLYO_DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -34,7 +33,7 @@ services:
   #   image: mcr.microsoft.com/mssql/server:2022-latest
   #   environment:
   #     ACCEPT_EULA: "Y"
-  #     MSSQL_SA_PASSWORD: "${EMPLYO_DB_PASSWORD}"
+  #     MSSQL_SA_PASSWORD: "${EMPLYO_DB_PASSWORD:?set EMPLYO_DB_PASSWORD}"
   #     MSSQL_PID: "Developer"
   #   ports:
   #     - "14330:1433"

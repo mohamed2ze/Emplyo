@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <Product>Emplyo</Product>
+    <Description>Business-rule unit tests for Emplyo.</Description>
   </PropertyGroup>
 
   <ItemGroup>

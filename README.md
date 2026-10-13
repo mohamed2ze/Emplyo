@@ -169,11 +169,10 @@ Do not use `sa` in production. No credentials are stored in source control.
 | `Storage:DocumentsRoot` | Private document/upload root (outside web root) | `<content-root>/App_Data/documents` |
 | `Email:Enabled` | Enable SMTP delivery of notification email | `false` |
 | `Email:Host` / `Port` / `UseSsl` / `FromAddress` / `FromName` | SMTP configuration | — |
-| `Organization:TimeZone` | IANA time zone used for display/attendance | `UTC` |
-| `Bootstrap:Admin*` | (optional) first-admin provisioning via config | — |
 
 At runtime, organization name, time zone, and work-day start are stored in the
-`AppSettings` table and edited from **Settings** (Administrator only).
+`AppSettings` table (seeded with `Emplyo`, `UTC` and `09:00`) and edited from
+**Settings** (Administrator only).
 
 ## Database migrations
 
@@ -224,14 +223,17 @@ suppressed; an administrator can reset a user's password from **User Management*
 
 ## Development data
 
-Fictional seed data (departments, positions, employees, leave types, holidays,
-sample attendance, sample leave requests, an announcement, and demo accounts) can
-be created with:
+Fictional seed data for a 20-person company (departments, positions, employees,
+leave types, holidays, sample attendance and leave requests, onboarding and
+offboarding examples, announcements, and demo accounts) can be created with:
 
 ```bash
 EMPLYO_DEV_PASSWORD="Emplyo!Dev2026" \
 dotnet run --project src/Emplyo.Web -- seed-dev-data
 ```
+
+`EMPLYO_DEV_PASSWORD` is required; there is no built-in default. The command
+refuses to run without it.
 
 Demo accounts created (development only — **never use in production**). Password:
 `Emplyo!Dev2026`
@@ -255,11 +257,11 @@ project, e.g. for a training program) is in
 dotnet run --project src/Emplyo.Web
 ```
 
-Then browse to the URL printed in the console (e.g. `http://localhost:5080`).
+Then browse to the URL printed in the console (e.g. `http://localhost:5076`).
 To choose a URL explicitly:
 
 ```bash
-ASPNETCORE_URLS=http://localhost:5080 dotnet run --project src/Emplyo.Web
+ASPNETCORE_URLS=http://localhost:5076 dotnet run --project src/Emplyo.Web
 ```
 
 Health check: `GET /health` returns `200` when SQL Server is reachable.
@@ -308,7 +310,7 @@ See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the full verification log.
 Summary of the verified build/test state:
 
 - `dotnet build` — **succeeded, 0 warnings, 0 errors**.
-- `dotnet test tests/Emplyo.UnitTests` — **30 passed**.
+- `dotnet test tests/Emplyo.UnitTests` — **31 passed**.
 - `dotnet test tests/Emplyo.IntegrationTests` — **12 passed** (real SQL Server).
 - Manual HTTP checks: login/logout, role-based access enforcement, employee
   creation, duplicate rejection, attendance clock in/out, leave submission and

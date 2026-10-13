@@ -50,7 +50,7 @@ dotnet run --project src/Emplyo.Web
 | Unit tests | `dotnet test tests/Emplyo.UnitTests` |
 | Integration tests | `dotnet test tests/Emplyo.IntegrationTests` |
 | All tests | `dotnet test` |
-| Health check | `curl http://localhost:5080/health` |
+| Health check | `curl http://localhost:5076/health` |
 | Provision admin | `EMPLYO_ADMIN_EMAIL=... EMPLYO_ADMIN_PASSWORD=... dotnet run --project src/Emplyo.Web -- seed-admin` |
 | Seed dev data | `EMPLYO_DEV_PASSWORD=... dotnet run --project src/Emplyo.Web -- seed-dev-data` |
 
@@ -83,7 +83,7 @@ container on `localhost:1433`):
 | Check | Result |
 | --- | --- |
 | `dotnet build` | Succeeded — 0 warnings, 0 errors |
-| `dotnet test tests/Emplyo.UnitTests` | **30 passed**, 0 failed |
+| `dotnet test tests/Emplyo.UnitTests` | **31 passed**, 0 failed |
 | `dotnet test tests/Emplyo.IntegrationTests` | **12 passed**, 0 failed |
 | `InitialCreate` migration applied to SQL Server | Succeeded |
 | `seed-dev-data` | Departments, positions, employees, leave types, holidays, attendance, announcements, demo users |

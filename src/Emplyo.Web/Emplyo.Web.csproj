@@ -20,6 +20,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>0d70cca2-3f6e-498d-9181-6539603dfcba</UserSecretsId>
+    <Product>Emplyo</Product>
+    <Description>Emplyo employee management system web application.</Description>
   </PropertyGroup>
 
 </Project>

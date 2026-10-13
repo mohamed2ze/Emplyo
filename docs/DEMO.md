@@ -173,7 +173,7 @@ EMPLYO_DEV_PASSWORD='Emplyo!Dev2026' \
 ## 6. Tests you can mention
 
 ```bash
-dotnet test tests/Emplyo.UnitTests         # 30 business-rule tests
+dotnet test tests/Emplyo.UnitTests         # 31 business-rule tests
 dotnet test tests/Emplyo.IntegrationTests  # 12 end-to-end tests (real SQL Server)
 ```
 
