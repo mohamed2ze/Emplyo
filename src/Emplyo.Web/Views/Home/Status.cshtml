@@ -9,17 +9,17 @@
         401 => "Authentication required",
         403 => "Access denied",
         404 => "Page not found",
-        500 => "Something went wrong",
+        500 => "Unable to load this page",
         _ => "Unexpected status"
     };
     var detail = message ?? code switch
     {
-        400 => "The request could not be processed as submitted.",
+        400 => "The request could not be processed as submitted. Check the address and the data you sent, then try again.",
         401 => "Please sign in to continue.",
         403 => "You do not have permission to view this resource.",
         404 => "The page or record you are looking for does not exist.",
-        500 => "An unexpected error occurred while processing your request.",
-        _ => "The request could not be completed."
+        500 => "The server could not complete this request. Try again, and if the problem continues, contact your administrator.",
+        _ => "The request could not be completed. Try again or return to your dashboard."
     };
 }
 <div class="error-page error-page--compact">

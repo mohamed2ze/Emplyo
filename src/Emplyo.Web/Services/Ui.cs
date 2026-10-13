@@ -1,5 +1,6 @@
 using System.Globalization;
 using Emplyo.Domain.Enums;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Emplyo.Web.Services;
 
@@ -10,6 +11,19 @@ public static class Ui
         var text = value.ToString();
         return string.Concat(text.Select((c, i) => i > 0 && char.IsUpper(c) ? " " + c : c.ToString()));
     }
+
+    public static IEnumerable<SelectListItem> Options<TEnum>(Func<TEnum, string>? label = null)
+        where TEnum : struct, Enum
+        => Enum.GetValues<TEnum>().Select(v => new SelectListItem(label?.Invoke(v) ?? Humanize(v), v.ToString()));
+
+    public static string AnnouncementAudienceLabel(AnnouncementAudience audience) => audience switch
+    {
+        AnnouncementAudience.Administrators => "Administrators",
+        AnnouncementAudience.HrManagers => "HR managers",
+        AnnouncementAudience.Employees => "Employees",
+        AnnouncementAudience.Department => "A department",
+        _ => "Everyone"
+    };
 
     public static string EmploymentStatusBadge(EmploymentStatus status)
         => Badge(status switch

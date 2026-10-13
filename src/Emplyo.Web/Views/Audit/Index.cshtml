@@ -4,7 +4,7 @@
     var actions = ViewBag.Actions as IReadOnlyList<string> ?? new List<string>();
 }
 <div class="page-head">
-    <div class="page-head__text"><h1>Audit logs</h1><p>Immutable record of important administrative and operational events. @Model.TotalCount entries.</p></div>
+    <div class="page-head__text"><h1>Audit logs</h1><p>Record of administrative and operational events. @Model.TotalCount entries.</p></div>
 </div>
 <div class="card"><div class="card__body">
     <form method="get" asp-action="Index" class="toolbar">

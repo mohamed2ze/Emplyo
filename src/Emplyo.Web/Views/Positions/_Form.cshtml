@@ -2,14 +2,14 @@
 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 <div class="form-grid">
     <div class="field">
-        <label asp-for="Form.Title">Title <span class="req">*</span></label>
+        <label asp-for="Form.Title">Position title <span class="req">*</span></label>
         <input asp-for="Form.Title" class="form-control" />
         <span asp-validation-for="Form.Title" class="validation"></span>
     </div>
     <div class="field">
         <label asp-for="Form.DepartmentId">Department</label>
         <select asp-for="Form.DepartmentId" class="form-select">
-            <option value="">— None —</option>
+            <option value="">None</option>
             @foreach (var d in Model.Departments) { <option value="@d.Id" selected="@(Model.Form.DepartmentId == d.Id)">@d.Name</option> }
         </select>
     </div>

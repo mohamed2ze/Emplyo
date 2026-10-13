@@ -3,7 +3,7 @@
     var roles = ViewBag.Roles as string[] ?? new[] { "Administrator", "HRManager", "Employee" };
     var employees = ViewBag.Employees as IReadOnlyList<(int Id, string Name, string Number)> ?? new List<(int, string, string)>();
 }
-<div class="page-head"><div class="page-head__text"><nav class="breadcrumb"><a asp-action="Index">Users</a><span>/</span>Create</nav><h1>Create user</h1><p>Provision a new account. Password requirements: 12+ characters with upper, lower, number and symbol.</p></div></div>
+<div class="page-head"><div class="page-head__text"><nav class="breadcrumb"><a asp-action="Index">User management</a><span>/</span>Create</nav><h1>Create user</h1><p>Provision a new account. Password requirements: 12+ characters with upper, lower, number and symbol.</p></div></div>
 <form asp-action="Create" method="post">
     <div class="card"><div class="card__body">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
@@ -20,7 +20,7 @@
             <div class="field">
                 <label asp-for="EmployeeId">Link to employee</label>
                 <select asp-for="EmployeeId" class="form-select">
-                    <option value="">— Not linked —</option>
+                    <option value="">Not linked</option>
                     @foreach (var e in employees) { <option value="@e.Id">@e.Name (@e.Number)</option> }
                 </select>
             </div>

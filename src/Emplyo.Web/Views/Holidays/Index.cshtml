@@ -9,7 +9,7 @@
     <div class="page-head__actions">
         <form method="get" asp-action="Index" class="d-flex gap-2">
             <input type="number" name="year" value="@year" class="form-control field--narrow" min="2000" max="2100" aria-label="Year" />
-            <button class="btn btn-secondary" type="submit">Go</button>
+            <button class="btn btn-secondary" type="submit">Show</button>
         </form>
         @if (canManage) { <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> Add holiday</a> }
     </div>

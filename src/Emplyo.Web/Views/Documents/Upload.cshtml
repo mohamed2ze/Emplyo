@@ -18,10 +18,10 @@
             <div class="field"><label for="title">Title</label><input id="title" name="title" class="form-control" placeholder="Defaults to file name" /></div>
             <div class="field">
                 <label for="category">Category</label>
-                <select id="category" name="category" class="form-select" asp-items="Html.GetEnumSelectList<DocumentCategory>()"></select>
+                <select id="category" name="category" class="form-select" asp-items="Ui.Options<DocumentCategory>()"></select>
             </div>
-            <div class="field"><label for="expirationDate">Expiration date</label><input id="expirationDate" name="expirationDate" type="date" class="form-control" /></div>
-            <div class="field"><label class="checkbox"><input id="isConfidential" name="isConfidential" type="checkbox" value="true" /> <span>Confidential (staff only)</span></label></div>
+            <div class="field"><label for="expirationDate">Expiry date</label><input id="expirationDate" name="expirationDate" type="date" class="form-control" /></div>
+            <div class="field"><label class="checkbox"><input id="isConfidential" name="isConfidential" type="checkbox" value="true" /> <span>Confidential (visible to HR and administrators)</span></label></div>
         </div>
     </div>
     <div class="card__foot">

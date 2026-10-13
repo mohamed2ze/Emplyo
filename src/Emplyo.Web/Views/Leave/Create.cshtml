@@ -16,7 +16,7 @@
                     <div class="field span-2">
                         <label asp-for="LeaveTypeId">Leave type <span class="req">*</span></label>
                         <select asp-for="LeaveTypeId" class="form-select" required>
-                            <option value="">— Select —</option>
+                            <option value="">Select a leave type</option>
                             @foreach (var t in leaveTypes)
                             {
                                 <option value="@t.Id" selected="@(Model.LeaveTypeId == t.Id)">@t.Name @(t.IsPaid ? "" : "(unpaid)")</option>

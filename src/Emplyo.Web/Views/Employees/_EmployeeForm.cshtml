@@ -39,7 +39,7 @@
     <div class="field">
         <label asp-for="Form.DepartmentId">Department</label>
         <select asp-for="Form.DepartmentId" class="form-select">
-            <option value="">— Unassigned —</option>
+            <option value="">Unassigned</option>
             @foreach (var d in Model.Departments)
             {
                 <option value="@d.Id" selected="@(Model.Form.DepartmentId == d.Id)">@d.Name</option>
@@ -49,7 +49,7 @@
     <div class="field">
         <label asp-for="Form.PositionId">Position</label>
         <select asp-for="Form.PositionId" class="form-select">
-            <option value="">— Unassigned —</option>
+            <option value="">Unassigned</option>
             @foreach (var p in Model.Positions)
             {
                 <option value="@p.Id" selected="@(Model.Form.PositionId == p.Id)">@p.Name</option>
@@ -59,7 +59,7 @@
     <div class="field">
         <label asp-for="Form.ManagerId">Manager</label>
         <select asp-for="Form.ManagerId" class="form-select">
-            <option value="">— None —</option>
+            <option value="">None</option>
             @foreach (var m in Model.Managers)
             {
                 <option value="@m.Id" selected="@(Model.Form.ManagerId == m.Id)">@m.FullName (@m.EmployeeNumber)</option>
@@ -73,19 +73,19 @@
     </div>
     <div class="field">
         <label asp-for="Form.EmploymentType">Employment type</label>
-        <select asp-for="Form.EmploymentType" class="form-select" asp-items="Html.GetEnumSelectList<EmploymentType>()"></select>
+        <select asp-for="Form.EmploymentType" class="form-select" asp-items="Ui.Options<EmploymentType>(Ui.EmploymentTypeLabel)"></select>
     </div>
     @if (!Model.IsEdit)
     {
         <div class="field">
             <label asp-for="Form.EmploymentStatus">Initial status</label>
-            <select asp-for="Form.EmploymentStatus" class="form-select" asp-items="Html.GetEnumSelectList<EmploymentStatus>()"></select>
+            <select asp-for="Form.EmploymentStatus" class="form-select" asp-items="Ui.Options<EmploymentStatus>()"></select>
         </div>
     }
     <div class="field">
         <label asp-for="Form.AnnualCompensation">Annual compensation</label>
         <input asp-for="Form.AnnualCompensation" type="number" step="0.01" min="0" class="form-control" />
-        <span class="hint">Restricted field — visible to administrators and HR only.</span>
+        <span class="hint">Visible to administrators and HR only.</span>
     </div>
     <div class="field">
         <label asp-for="Form.CompensationCurrency">Currency</label>

@@ -6,7 +6,7 @@
 <div class="page-head">
     <div class="page-head__text">
         <h1>HR dashboard</h1>
-        <p>Headcount, attendance and people operations at a glance.</p>
+        <p>Headcount, attendance and leave for the current period.</p>
     </div>
     <div class="page-head__actions">
         <a class="btn btn-secondary" asp-controller="Leave" asp-action="Index" asp-route-status="Pending"><i class="bi bi-calendar2-check"></i> Leave queue</a>
@@ -54,7 +54,7 @@
             {
                 <div class="table-wrap">
                     <table class="data-table">
-                        <thead><tr><th>Employee</th><th>Position</th><th>Hired</th></tr></thead>
+                        <thead><tr><th>Employee</th><th>Position</th><th>Hire date</th></tr></thead>
                         <tbody>
                         @foreach (var h in Model.RecentHires)
                         {

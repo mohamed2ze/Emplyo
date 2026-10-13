@@ -5,7 +5,7 @@
 @if (Model.Any())
 {
     <div class="table-wrap"><table class="data-table">
-        <thead><tr><th>Title</th><th>Category</th><th>Size</th><th>Expires</th><th>Uploaded</th><th class="text-end">Actions</th></tr></thead>
+        <thead><tr><th>Title</th><th>Category</th><th class="num">Size</th><th>Expiry date</th><th>Uploaded</th><th class="text-end">Actions</th></tr></thead>
         <tbody>
         @foreach (var d in Model)
         {

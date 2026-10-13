@@ -11,7 +11,7 @@
     var leaveUtil = ViewBag.LeaveUtilization as IReadOnlyList<LeaveUtilizationDto> ?? new List<LeaveUtilizationDto>();
 }
 <div class="page-head">
-    <div class="page-head__text"><h1>Reports</h1><p>Operational reporting and authorized CSV exports.</p></div>
+    <div class="page-head__text"><h1>Reports</h1><p>Headcount, leave and attendance reports with CSV export.</p></div>
     <div class="page-head__actions">
         <a class="btn btn-secondary" asp-action="ExportEmployees"><i class="bi bi-filetype-csv"></i> Employee directory</a>
         <a class="btn btn-secondary" asp-action="ExportHeadcount"><i class="bi bi-filetype-csv"></i> Headcount</a>

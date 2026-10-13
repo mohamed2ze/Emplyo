@@ -4,7 +4,7 @@
 }
 <div class="page-head">
     <div class="page-head__text"><h1>Attendance</h1><p>@Model.TotalCount attendance record(s).</p></div>
-    <div class="page-head__actions"><a class="btn btn-primary" asp-action="Correct"><i class="bi bi-pencil-square"></i> Add / correct</a></div>
+    <div class="page-head__actions"><a class="btn btn-primary" asp-action="Correct"><i class="bi bi-pencil-square"></i> Add or correct record</a></div>
 </div>
 
 <div class="card">
@@ -35,7 +35,7 @@
         {
             <div class="table-wrap">
                 <table class="data-table">
-                    <thead><tr><th>Employee</th><th>Date</th><th>Clock-in</th><th>Clock-out</th><th class="num">Hours</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                    <thead><tr><th>Employee</th><th>Date</th><th>Clock in</th><th>Clock out</th><th class="num">Hours</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
                     <tbody>
                     @foreach (var a in Model.Items)
                     {

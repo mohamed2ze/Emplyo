@@ -23,7 +23,7 @@
                 <div class="field">
                     <label for="employeeId">Employee <span class="req">*</span></label>
                     <select id="employeeId" name="employeeId" class="form-select" required>
-                        <option value="">— Select employee —</option>
+                        <option value="">Select an employee</option>
                         @foreach (var e in employees)
                         {
                             <option value="@e.Id" selected="@(selected == e.Id)">@e.FullName (@e.EmployeeNumber)</option>
@@ -35,16 +35,16 @@
                     <input asp-for="WorkDate" type="date" class="form-control" />
                 </div>
                 <div class="field">
-                    <label asp-for="ClockIn">Clock-in</label>
+                    <label asp-for="ClockIn">Clock in</label>
                     <input asp-for="ClockIn" type="datetime-local" class="form-control" />
                 </div>
                 <div class="field">
-                    <label asp-for="ClockOut">Clock-out</label>
+                    <label asp-for="ClockOut">Clock out</label>
                     <input asp-for="ClockOut" type="datetime-local" class="form-control" />
                 </div>
                 <div class="field">
                     <label asp-for="Status">Status</label>
-                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<AttendanceStatus>()"></select>
+                    <select asp-for="Status" class="form-select" asp-items="Ui.Options<AttendanceStatus>()"></select>
                 </div>
                 <div class="field span-2">
                     <label asp-for="Notes">Notes</label>

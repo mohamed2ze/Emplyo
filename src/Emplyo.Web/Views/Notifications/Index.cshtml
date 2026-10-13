@@ -1,6 +1,6 @@
 @model IReadOnlyList<NotificationDto>
 <div class="page-head">
-    <div class="page-head__text"><h1>Notifications</h1><p>Workflow updates relevant to you.</p></div>
+    <div class="page-head__text"><h1>Notifications</h1><p>Leave decisions, approvals and announcements.</p></div>
     @if (Model.Any(n => !n.IsRead))
     {
         <div class="page-head__actions">
@@ -41,5 +41,5 @@
             }
         </div>
     }
-    else { <div class="empty"><i class="bi bi-bell-slash"></i><h4>No notifications</h4><p>You are all caught up.</p></div> }
+    else { <div class="empty"><i class="bi bi-bell-slash"></i><h4>No notifications</h4><p>Leave decisions and announcements appear here.</p></div> }
 </div></div>

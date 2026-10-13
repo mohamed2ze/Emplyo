@@ -88,7 +88,7 @@
                             <th>Department</th>
                             <th>Position</th>
                             <th><a asp-action="Index" asp-all-route-data="sortByStatus" class="text-decoration-none">Status <i class="bi @SortIcon("status")"></i></a></th>
-                            <th><a asp-action="Index" asp-all-route-data="sortByHire" class="text-decoration-none">Hired <i class="bi @SortIcon("hiredate")"></i></a></th>
+                            <th><a asp-action="Index" asp-all-route-data="sortByHire" class="text-decoration-none">Hire date <i class="bi @SortIcon("hiredate")"></i></a></th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -136,8 +136,8 @@
             <div class="empty">
                 <i class="bi bi-people"></i>
                 <h4>No employees found</h4>
-                <p>Try adjusting your search or filters, or add your first employee.</p>
-                <a class="btn btn-primary" asp-action="Create"><i class="bi bi-person-plus"></i> Add employee</a>
+                <p>No employee matches the current search and filters. Clear them to see the full directory.</p>
+                <div class="d-flex gap-2 justify-content-center"><a class="btn btn-secondary" asp-action="Index">Clear filters</a><a class="btn btn-primary" asp-action="Create"><i class="bi bi-person-plus"></i> Add employee</a></div>
             </div>
         }
     </div>
