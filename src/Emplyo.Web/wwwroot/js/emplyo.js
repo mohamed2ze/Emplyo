@@ -49,26 +49,34 @@
                 try { values = JSON.parse(raw); } catch (e) { return; }
                 try { labels = JSON.parse(rawLabels || "[]"); } catch (e) { labels = []; }
                 var type = canvas.getAttribute("data-chart") || "bar";
-                var palette = ["#2563eb", "#0d9488", "#d97706", "#dc2626", "#7c3aed", "#0891b2", "#4d7c0f", "#be185d"];
+                // DESIGN.md §24.1 chart series colors.
+                var palette = ["#2563EB", "#0F766E", "#7C3AED", "#D97706", "#667085"];
                 new Chart(canvas, {
                     type: type,
                     data: {
                         labels: labels,
                         datasets: [{
                             data: values,
-                            backgroundColor: type === "doughnut" ? palette : "#2563eb",
-                            borderColor: "#ffffff",
+                            backgroundColor: type === "doughnut" ? palette : "#2563EB",
+                            borderColor: "#FFFFFF",
                             borderWidth: type === "doughnut" ? 2 : 0,
-                            borderRadius: type === "bar" ? 6 : 0
+                            borderRadius: type === "bar" ? 4 : 0
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: type === "doughnut", position: "bottom" } },
+                        font: { family: "Inter, system-ui, sans-serif" },
+                        plugins: {
+                            legend: {
+                                display: type === "doughnut",
+                                position: "bottom",
+                                labels: { boxWidth: 12, boxHeight: 12, font: { family: "Inter, system-ui, sans-serif", size: 12 } }
+                            }
+                        },
                         scales: type === "doughnut" ? {} : {
-                            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#e2e8f0" } },
-                            x: { grid: { display: false } }
+                            y: { beginAtZero: true, ticks: { precision: 0, font: { family: "Inter, system-ui, sans-serif", size: 12 } }, grid: { color: "#E3E8EF" } },
+                            x: { grid: { display: false }, ticks: { font: { family: "Inter, system-ui, sans-serif", size: 12 } } }
                         }
                     }
                 });
