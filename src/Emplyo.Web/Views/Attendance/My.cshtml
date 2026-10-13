@@ -41,11 +41,15 @@
         <div class="card__body">
             @if (summary is not null)
             {
-                <div class="stat-grid">
-                    <div class="stat"><div class="stat__icon green"><i class="bi bi-check2"></i></div><div><div class="stat__value">@summary.PresentDays</div><div class="stat__label">Present</div></div></div>
-                    <div class="stat"><div class="stat__icon amber"><i class="bi bi-clock"></i></div><div><div class="stat__value">@summary.LateDays</div><div class="stat__label">Late</div></div></div>
-                    <div class="stat"><div class="stat__icon slate"><i class="bi bi-hourglass"></i></div><div><div class="stat__value">@summary.TotalWorkedHours</div><div class="stat__label">Hours</div></div></div>
+                <div class="stat-rows">
+                    <div class="stat-row"><span class="stat-row__label">Present</span><span class="stat-row__value">@summary.PresentDays</span></div>
+                    <div class="stat-row"><span class="stat-row__label">Late</span><span class="stat-row__value">@summary.LateDays</span></div>
+                    <div class="stat-row"><span class="stat-row__label">Hours worked</span><span class="stat-row__value">@summary.TotalWorkedHours</span></div>
                 </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No attendance records in the last 45 days.</p>
             }
         </div>
     </div>

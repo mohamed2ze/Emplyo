@@ -47,15 +47,21 @@
     <div class="card">
         <div class="card__head"><h3>Employment status</h3></div>
         <div class="card__body p-0">
-            <table class="data-table">
-                <thead><tr><th>Status</th><th class="num">Employees</th></tr></thead>
-                <tbody>
-                @foreach (var s in statusSummary)
-                {
-                    <tr><td>@Html.Raw(Ui.EmploymentStatusBadge(s.Status))</td><td class="num">@s.Count</td></tr>
-                }
-                </tbody>
-            </table>
+            @if (statusSummary.Any())
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>Status</th><th class="num">Employees</th></tr></thead>
+                        <tbody>
+                        @foreach (var s in statusSummary)
+                        {
+                            <tr><td>@Html.Raw(Ui.EmploymentStatusBadge(s.Status))</td><td class="num">@s.Count</td></tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else { <div class="empty"><i class="bi bi-people"></i><p class="mb-0">No employee records yet.</p></div> }
         </div>
     </div>
 </div>

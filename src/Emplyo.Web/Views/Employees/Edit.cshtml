@@ -28,7 +28,8 @@
             </span>
             <div>
                 <h3 class="h6 mb-1">Profile photo</h3>
-                <form asp-action="UploadPhoto" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+                <form asp-action="UploadPhoto" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center"
+                      data-confirm="@(!string.IsNullOrEmpty(Model.ProfilePhotoPath) ? "Replace the current profile photo?" : null)">
                     <input type="file" name="photo" accept=".jpg,.jpeg,.png,.webp" class="form-control form-control-sm photo-input" />
                     <button type="submit" class="btn btn-secondary btn-sm">Upload</button>
                 </form>

@@ -13,7 +13,8 @@
         @if (isStaff)
         {
             <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model.Id"><i class="bi bi-pencil"></i> Edit</a>
-            <form asp-action="SetPublished" asp-route-id="@Model.Id" method="post">
+            <form asp-action="SetPublished" asp-route-id="@Model.Id" method="post"
+                  data-confirm="@(Model.IsPublished ? "Archive this announcement? It will no longer appear to employees." : null)">
                 <input type="hidden" name="published" value="@(!Model.IsPublished)" />
                 <button class="btn @(Model.IsPublished ? "btn-secondary" : "btn-primary")" type="submit">
                     <i class="bi @(Model.IsPublished ? "bi-archive" : "bi-send")"></i> @(Model.IsPublished ? "Archive" : "Publish")

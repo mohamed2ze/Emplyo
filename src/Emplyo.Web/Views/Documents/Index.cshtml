@@ -17,7 +17,7 @@
     <form method="get" asp-action="Index" class="toolbar">
         <div class="field grow">
             <label for="employeeId">Employee</label>
-            <select id="employeeId" name="employeeId" class="form-select" data-auto-submit>
+            <select id="employeeId" name="employeeId" class="form-select" data-auto-submit required>
                 <option value="">Select an employee</option>
                 @foreach (var e in employees) { <option value="@e.Id" selected="@(employeeId == e.Id)">@e.FullName (@e.EmployeeNumber)</option> }
             </select>

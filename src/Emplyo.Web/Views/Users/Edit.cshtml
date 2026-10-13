@@ -5,7 +5,8 @@
     var employees = ViewBag.Employees as IReadOnlyList<(int Id, string Name, string Number)> ?? new List<(int, string, string)>();
 }
 <div class="page-head"><div class="page-head__text"><nav class="breadcrumb"><a asp-action="Index">User management</a><span>/</span>Edit</nav><h1>Edit @user?.DisplayName</h1><p>@user?.Email</p></div></div>
-<form asp-action="Edit" method="post">
+<form asp-action="Edit" method="post" data-confirm-unchecked="IsActive"
+      data-confirm-unchecked-message="Deactivate this account? The user is signed out and cannot sign in again until the account is reactivated. Records and audit history are preserved.">
     <div class="card"><div class="card__body">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
         <div class="form-grid">
