@@ -113,29 +113,29 @@ public class UserAdminService : IUserAdminService
         var user = await _identity.FindByIdAsync(id, ct)
             ?? throw new NotFoundException("User not found.");
 
-        await _identity.SetRolesAsync(id, new[] { dto.Role });
-        await _identity.SetActiveAsync(id, dto.IsActive);
-
+        Employee? employeeToLink = null;
         if (dto.EmployeeId.HasValue)
         {
             if (await _db.Employees.AnyAsync(e => e.Id == dto.EmployeeId && e.UserId != null && e.UserId != id, ct))
                 throw new ConflictException("The selected employee is already linked to another account.");
 
-            var previouslyLinked = await _db.Employees.Where(e => e.UserId == id).ToListAsync(ct);
-            foreach (var e in previouslyLinked) e.UserId = null;
-
-            var employee = await _db.Employees.FirstOrDefaultAsync(e => e.Id == dto.EmployeeId, ct)
+            employeeToLink = await _db.Employees.FirstOrDefaultAsync(e => e.Id == dto.EmployeeId, ct)
                 ?? throw new BusinessRuleException("Selected employee does not exist.");
-            employee.UserId = id;
-            employee.UpdatedAtUtc = DateTime.UtcNow;
-            await _db.SaveChangesAsync(ct);
         }
-        else
+
+        await _identity.SetRolesAsync(id, new[] { dto.Role });
+        await _identity.SetActiveAsync(id, dto.IsActive);
+
+        var previouslyLinked = await _db.Employees.Where(e => e.UserId == id).ToListAsync(ct);
+        foreach (var e in previouslyLinked) e.UserId = null;
+
+        if (employeeToLink is not null)
         {
-            var linked = await _db.Employees.Where(e => e.UserId == id).ToListAsync(ct);
-            foreach (var e in linked) e.UserId = null;
-            await _db.SaveChangesAsync(ct);
+            employeeToLink.UserId = id;
+            employeeToLink.UpdatedAtUtc = DateTime.UtcNow;
         }
+
+        await _db.SaveChangesAsync(ct);
 
         await _audit.RecordAsync(new AuditEntry
         {
