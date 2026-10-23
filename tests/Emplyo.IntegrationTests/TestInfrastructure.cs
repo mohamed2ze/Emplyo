@@ -43,3 +43,16 @@ public static class LoginHelper
         return await client.PostAsync("/Account/Login", content);
     }
 }
+
+public static class AccessControl
+{
+    public static void AssertDenied(HttpResponseMessage response)
+    {
+        Assert.True(response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Redirect,
+            $"Expected access to be denied but received {response.StatusCode}.");
+        if (response.StatusCode == HttpStatusCode.Redirect)
+        {
+            Assert.Contains("/Account/AccessDenied", response.Headers.Location!.ToString());
+        }
+    }
+}

@@ -30,6 +30,20 @@ public static class TestData
         return await db.Employees.AnyAsync(e => e.EmployeeNumber == number);
     }
 
+    public static async Task<int> DepartmentIdByNameAsync(EmplyoWebAppFactory factory, string name)
+    {
+        using var scope = ScopeFactory(factory).CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.Departments.Where(d => d.Name == name).Select(d => d.Id).FirstAsync();
+    }
+
+    public static async Task<int> DocumentIdByTitleAsync(EmplyoWebAppFactory factory, string title)
+    {
+        using var scope = ScopeFactory(factory).CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.EmployeeDocuments.Where(d => d.Title == title).OrderByDescending(d => d.Id).Select(d => d.Id).FirstAsync();
+    }
+
     public static async Task<(int? Id, int EmployeeId)> AnotherEmployeesPendingLeaveAsync(EmplyoWebAppFactory factory)
     {
         using var scope = ScopeFactory(factory).CreateScope();
