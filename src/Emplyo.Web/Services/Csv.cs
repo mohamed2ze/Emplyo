@@ -12,7 +12,7 @@ public static class Csv
         if (string.IsNullOrEmpty(value)) return string.Empty;
 
         var v = value;
-        if (v.Length > 0 && v[0] is '=' or '+' or '-' or '@' or '\t' or '\r')
+        if (v.Length > 0 && v[0] is '=' or '+' or '-' or '@' or '\t' or '\r' or '\n')
         {
             v = "'" + v;
         }
@@ -29,5 +29,13 @@ public static class Csv
         => string.Join(",", values.Select(Escape));
 
     public static byte[] ToBytes(IEnumerable<string> lines)
-        => new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetBytes(string.Join("\r\n", lines) + "\r\n");
+    {
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
+        var preamble = encoding.GetPreamble();
+        var body = encoding.GetBytes(string.Join("\r\n", lines) + "\r\n");
+        var bytes = new byte[preamble.Length + body.Length];
+        preamble.CopyTo(bytes, 0);
+        body.CopyTo(bytes, preamble.Length);
+        return bytes;
+    }
 }
