@@ -6,6 +6,8 @@
 **/*.user
 tests/
 docs/
+assets/
+scripts/
 *.md
 .git/
 Dockerfile

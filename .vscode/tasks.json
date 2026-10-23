@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/Emplyo.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "ensure-sqlserver",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/dev.sh",
+      "args": ["--ensure-db"],
+      "problemMatcher": []
+    },
+    {
+      "label": "build-and-ensure-sqlserver",
+      "dependsOrder": "parallel",
+      "dependsOn": ["build", "ensure-sqlserver"],
+      "problemMatcher": []
+    }
+  ]
+}

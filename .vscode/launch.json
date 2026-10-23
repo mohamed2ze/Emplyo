@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Emplyo.Web",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-and-ensure-sqlserver",
+      "program": "${workspaceFolder}/src/Emplyo.Web/bin/Debug/net10.0/Emplyo.Web.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/Emplyo.Web",
+      "launchSettingsProfile": "http",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "stopAtEntry": false
+    }
+  ]
+}
