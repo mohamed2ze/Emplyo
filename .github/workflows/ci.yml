@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Emplyo!Ci2026Strong"
+        ports:
+          - 1433:1433
+
+    env:
+      EMPLYO_TEST_CONNECTION: "Server=localhost,1433;Database=Emplyo;User Id=sa;Password=Emplyo!Ci2026Strong;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
+      ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=Emplyo;User Id=sa;Password=Emplyo!Ci2026Strong;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Check vulnerable dependencies
+        run: |
+          output=$(dotnet list Emplyo.sln package --vulnerable --include-transitive)
+          printf '%s\n' "$output"
+          if printf '%s\n' "$output" | grep -q "has the following vulnerable packages"; then
+            echo "Vulnerable NuGet packages were detected."
+            exit 1
+          fi
+
+      - name: Install Playwright Chromium
+        run: pwsh tests/Emplyo.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Wait for SQL Server
+        run: |
+          for attempt in $(seq 1 60); do
+            if (echo > /dev/tcp/127.0.0.1/1433) >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "SQL Server did not accept connections in time."
+          exit 1
+
+      - name: Unit tests
+        run: dotnet test tests/Emplyo.UnitTests --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory coverage/unit
+
+      - name: Integration tests
+        run: dotnet test tests/Emplyo.IntegrationTests --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory coverage/integration
+
+      - name: Browser smoke tests
+        run: dotnet test tests/Emplyo.E2ETests --configuration Release --no-build
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/**/coverage.cobertura.xml
+          if-no-files-found: warn
