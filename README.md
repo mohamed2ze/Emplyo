@@ -99,7 +99,9 @@ Emplyo/
 
 Dependency direction: `Web → Infrastructure → Application → Domain`.
 The Domain layer has no dependency on EF Core or ASP.NET Core. See
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for details and design decisions.
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for details and design
+decisions, and [`docs/PROJECT-STRUCTURE.md`](docs/PROJECT-STRUCTURE.md) for
+the full repository map and where new code belongs.
 
 ## Prerequisites
 
@@ -359,9 +361,13 @@ and Data Protection keys in named volumes.
 
 ## Further documentation
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+All documentation is indexed in [`docs/README.md`](docs/README.md).
+
+- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — setup, commands, testing, verification log
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — layers, boundaries, design decisions
+- [`docs/PROJECT-STRUCTURE.md`](docs/PROJECT-STRUCTURE.md) — repository map and where new code belongs
 - [`docs/DATABASE.md`](docs/DATABASE.md)
 - [`docs/SECURITY.md`](docs/SECURITY.md)
-- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
+- [`docs/DESIGN.md`](docs/DESIGN.md) — UI/UX design system implemented by the web app
 - [`docs/DEMO.md`](docs/DEMO.md) — fictional demo data and presentation walkthrough
