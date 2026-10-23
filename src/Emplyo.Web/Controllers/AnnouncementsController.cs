@@ -48,7 +48,14 @@ public class AnnouncementsController : Controller
         if (model is null) return NotFound();
 
         var isStaff = User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.HrManager);
-        if (!isStaff && !model.IsPublished) return NotFound();
+        if (!isStaff)
+        {
+            var employee = _currentUser.EmployeeId.HasValue
+                ? await _employees.GetByIdAsync(_currentUser.EmployeeId.Value, ct)
+                : null;
+            var visible = await _announcements.GetActiveForRoleAsync(_currentUser.Roles, employee?.DepartmentId, ct);
+            if (visible.All(a => a.Id != id)) return NotFound();
+        }
 
         ViewData["Title"] = model.Title;
         ViewBag.IsStaff = isStaff;

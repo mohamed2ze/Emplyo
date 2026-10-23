@@ -62,12 +62,26 @@ public class DomainExceptionFilter : IExceptionFilter
                     var tempData = tempDataFactory.GetTempData(context.HttpContext);
                     tempData["Error"] = domain.Message;
 
-                    var referer = context.HttpContext.Request.Headers.Referer.ToString();
-                    context.Result = string.IsNullOrEmpty(referer)
-                        ? new RedirectResult("/")
-                        : new RedirectResult(referer);
+                    context.Result = new RedirectResult(
+                        GetSafeReferer(context.HttpContext, context.HttpContext.Request.Headers.Referer.ToString()));
                 }
                 break;
         }
+    }
+
+    private static string GetSafeReferer(HttpContext context, string? referer)
+    {
+        if (string.IsNullOrWhiteSpace(referer)) return "/";
+
+        if (Uri.TryCreate(referer, UriKind.Absolute, out var absolute))
+        {
+            var sameHost = string.Equals(absolute.Authority, context.Request.Host.Value, StringComparison.OrdinalIgnoreCase);
+            var webScheme = absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps;
+            return sameHost && webScheme ? absolute.PathAndQuery + absolute.Fragment : "/";
+        }
+
+        return referer.StartsWith('/') && !referer.StartsWith("//") && !referer.StartsWith("/\\")
+            ? referer
+            : "/";
     }
 }
