@@ -21,6 +21,7 @@ Architecture layering. See the root `README.md` for features and setup.
 dotnet build                                            # build (must be 0 warnings)
 dotnet test tests/Emplyo.UnitTests                      # unit tests
 dotnet test tests/Emplyo.IntegrationTests              # needs SQL Server on localhost:1433
+dotnet test tests/Emplyo.E2ETests                      # real Chromium browser smoke tests
 dotnet test                                             # everything
 ./scripts/dev.sh                                        # ensure SQL Server container, run the app
 dotnet run --project src/Emplyo.Web -- migrate          # apply DB migrations (explicit, never automatic)
@@ -58,5 +59,5 @@ from previous runs.
 
 ## Before considering work complete
 
-Run `dotnet build` and both test suites; all must pass with zero warnings.
+Run `dotnet build` and all test suites (unit, integration, E2E); all must pass with zero warnings.
 Update the affected documentation if behavior, structure, or commands change.

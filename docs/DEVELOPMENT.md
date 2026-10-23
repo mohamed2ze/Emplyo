@@ -49,7 +49,12 @@ EMPLYO_DEV_PASSWORD="Emplyo!Dev2026" dotnet run --project src/Emplyo.Web -- seed
 | Add migration | `dotnet ef migrations add <Name> --project src/Emplyo.Infrastructure --startup-project src/Emplyo.Web --output-dir Persistence/Migrations` |
 | Unit tests | `dotnet test tests/Emplyo.UnitTests` |
 | Integration tests | `dotnet test tests/Emplyo.IntegrationTests` |
+| Browser smoke tests | `dotnet test tests/Emplyo.E2ETests` |
 | All tests | `dotnet test` |
+| Install Playwright Chromium | `pwsh tests/Emplyo.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium` |
+| Unit coverage | `dotnet test tests/Emplyo.UnitTests --collect:"XPlat Code Coverage" --results-directory TestResults/unit` |
+| Integration coverage | `dotnet test tests/Emplyo.IntegrationTests --collect:"XPlat Code Coverage" --results-directory TestResults/integration` |
+| Vulnerable dependencies | `dotnet list Emplyo.sln package --vulnerable --include-transitive` |
 | Health check | `curl http://localhost:5076/health` |
 | Provision admin | `EMPLYO_ADMIN_EMAIL=... EMPLYO_ADMIN_PASSWORD=... dotnet run --project src/Emplyo.Web -- seed-admin` |
 | Seed dev data | `EMPLYO_DEV_PASSWORD=... dotnet run --project src/Emplyo.Web -- seed-dev-data` |
@@ -73,15 +78,36 @@ VS Code launch configuration runs it automatically before starting the debugger.
 
 ## Testing approach
 
-- **Unit tests** (`Emplyo.UnitTests`) cover pure domain logic
-  (`WorkingDayCalculator`, `EmploymentStatusPolicy`) and Application services using
-  EF Core InMemory with lightweight fakes for cross-cutting interfaces.
+- **Unit tests** (`Emplyo.UnitTests`) cover domain logic (`WorkingDayCalculator`,
+  `EmploymentStatusPolicy`), Application services using EF Core InMemory with
+  lightweight fakes for cross-cutting interfaces, and security-sensitive helpers
+  such as CSV escaping and file storage. Announcement visibility, leave balance and
+  holiday rules, attendance time-zone handling, document validation, notification
+  ownership, user-administration consistency, reporting aggregates, and paging
+  boundaries all have focused tests.
 - **Integration tests** (`Emplyo.IntegrationTests`) boot the real application with
   `WebApplicationFactory<Program>` against a dedicated **`Emplyo_Test`** SQL Server
   database (derived from `DefaultConnection`, overridable with
   `EMPLYO_TEST_CONNECTION`). They exercise real HTTP, real Identity, real EF Core,
   and real SQL Server constraints. They are isolated and repeatable and never touch
-  the application database.
+  the application database. They also verify resource-based authorization,
+  announcement audience enforcement, confidential-document download rules, CSRF
+  rejection, account lockout, safe error redirects, and CSV export safety.
+- **Browser smoke tests** (`Emplyo.E2ETests`) launch the real application on Kestrel
+  and drive Chromium through Playwright. The fixture migrates and seeds a dedicated
+  **`Emplyo_E2E`** database derived from the configured test connection, then covers
+  login, personal navigation, access-denied behavior, CSV download, settings access,
+  leave submission/cancellation, and basic accessibility structure. Install the
+  Chromium browser once with the command in the table above.
+- **Coverage** uses the existing `coverlet.collector` package and emits Cobertura
+  reports; no separate coverage tool is required. Coverage is a diagnostic, not a
+  guarantee of correctness.
+- **Dependency security** is checked with the .NET SDK's built-in vulnerable-package
+  audit; the CI job fails if a vulnerable NuGet package is reported.
+- **CI** (`.github/workflows/ci.yml`) builds with zero warnings and runs unit,
+  integration, and browser suites against a SQL Server service container, uploading
+  coverage artifacts. The pipeline is reproducible from the repository without
+  local secrets.
 
 ## Verification log
 
@@ -91,8 +117,10 @@ container on `localhost:1433`):
 | Check | Result |
 | --- | --- |
 | `dotnet build` | Succeeded — 0 warnings, 0 errors |
-| `dotnet test tests/Emplyo.UnitTests` | **31 passed**, 0 failed |
-| `dotnet test tests/Emplyo.IntegrationTests` | **12 passed**, 0 failed |
+| `dotnet test tests/Emplyo.UnitTests` | **227 passed**, 0 failed |
+| `dotnet test tests/Emplyo.IntegrationTests` | **75 passed**, 0 failed |
+| `dotnet test tests/Emplyo.E2ETests` | **7 passed**, 0 failed |
+| Coverage (unit + integration, union) | 57.8% lines, 63.9% branches |
 | `InitialCreate` migration applied to SQL Server | Succeeded |
 | `seed-dev-data` | Departments, positions, employees, leave types, holidays, attendance, announcements, demo users |
 | App startup + `GET /health` | `200` |

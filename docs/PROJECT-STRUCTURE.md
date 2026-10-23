@@ -18,7 +18,8 @@ Emplyo/
 │   └── Emplyo.Web/                # MVC controllers, Razor views, composition root
 ├── tests/
 │   ├── Emplyo.UnitTests/           # Business-rule tests (EF InMemory + fakes)
-│   └── Emplyo.IntegrationTests/    # Real HTTP + real SQL Server tests
+│   ├── Emplyo.IntegrationTests/    # Real HTTP + real SQL Server tests
+│   └── Emplyo.E2ETests/            # Real Chromium browser smoke tests
 ├── docs/                           # All project documentation (see docs/README.md)
 ├── assets/                         # Branding source assets (README banner, icon source)
 ├── scripts/
@@ -109,13 +110,15 @@ Entry points:
 
 | Project | Scope | Layout |
 | --- | --- | --- |
-| `Emplyo.UnitTests` | Domain + Application business rules | One file per area (`LeaveServiceTests`, …) + `TestSupport/` fakes |
-| `Emplyo.IntegrationTests` | Real HTTP, real Identity, real SQL Server | `EmplyoWebAppFactory` (boots the app against the `Emplyo_Test` database) + `TestInfrastructure` helpers + test classes |
+| `Emplyo.UnitTests` | Domain + Application business rules, plus infrastructure helpers | One file per area (`LeaveServiceTests`, …) + `TestSupport/` fakes |
+| `Emplyo.IntegrationTests` | Real HTTP, real Identity, real SQL Server, database constraints | `EmplyoWebAppFactory` (boots the app against the `Emplyo_Test` database) + `TestInfrastructure` helpers + test classes |
+| `Emplyo.E2ETests` | Real Chromium browser through Playwright against the running app | `EmplyoE2EFixture` (starts Kestrel, migrates/seeds `Emplyo_E2E`) + workflow tests |
 
 Integration tests use a dedicated **`Emplyo_Test`** database derived from
 `DefaultConnection` (override with `EMPLYO_TEST_CONNECTION`). The database is
 migrated and seeded but **never reset**, so tests must tolerate data left by
-previous runs.
+previous runs. Browser tests use a separate **`Emplyo_E2E`** database with fixed
+test-only credentials.
 
 ## Where new code belongs
 
@@ -128,6 +131,7 @@ To add a feature (e.g. a new business module):
 5. Controller + views → `src/Emplyo.Web/Controllers/`, `src/Emplyo.Web/Views/<Controller>/`
 6. Unit tests → `tests/Emplyo.UnitTests/<Module>ServiceTests.cs`
 7. Integration tests → `tests/Emplyo.IntegrationTests/`
+8. Browser-level flows → `tests/Emplyo.E2ETests/`
 
 Rules to respect: no business logic in controllers or views; the Domain layer
 stays free of framework references; no automatic or destructive database

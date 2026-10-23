@@ -73,7 +73,7 @@ administration.
 | Data | EF Core 10, `Microsoft.EntityFrameworkCore.SqlServer` |
 | Database | Microsoft SQL Server (2022/2025 verified) |
 | Identity | ASP.NET Core Identity (cookie authentication) |
-| Testing | xUnit, `Microsoft.AspNetCore.Mvc.Testing`, EF Core (real SQL Server) |
+| Testing | xUnit, `Microsoft.AspNetCore.Mvc.Testing`, Microsoft Playwright, EF Core (real SQL Server) |
 | Tooling | .NET CLI, `dotnet-ef`, User Secrets, Docker Compose |
 
 ## Solution architecture
@@ -90,7 +90,8 @@ Emplyo/
 │   └── Emplyo.Web/           # MVC controllers, Razor views, design system, composition root
 ├── tests/
 │   ├── Emplyo.UnitTests/         # Business-rule unit tests (EF InMemory)
-│   └── Emplyo.IntegrationTests/  # Real HTTP + real SQL Server end-to-end tests
+│   ├── Emplyo.IntegrationTests/  # Real HTTP + real SQL Server tests
+│   └── Emplyo.E2ETests/          # Real Chromium browser smoke tests
 ├── docs/
 ├── Dockerfile
 ├── docker-compose.yml
@@ -285,6 +286,11 @@ dotnet test tests/Emplyo.UnitTests
 # Integration tests (real HTTP + real SQL Server)
 dotnet test tests/Emplyo.IntegrationTests
 
+# Browser smoke tests (real Chromium + real web server)
+# First-time setup:
+pwsh tests/Emplyo.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+dotnet test tests/Emplyo.E2ETests
+
 # Everything
 dotnet test
 ```
@@ -292,6 +298,23 @@ dotnet test
 Integration tests use a dedicated database named **`Emplyo_Test`** derived from
 `DefaultConnection` (override with `EMPLYO_TEST_CONNECTION`). They apply
 migrations and seed their own data; they never touch the application database.
+Browser tests use a separate **`Emplyo_E2E`** database and fixed test-only demo
+credentials; they never touch the application database.
+
+Coverage is collected with the existing Coverlet collector:
+
+```bash
+dotnet test tests/Emplyo.UnitTests --collect:"XPlat Code Coverage" --results-directory TestResults/unit
+dotnet test tests/Emplyo.IntegrationTests --collect:"XPlat Code Coverage" --results-directory TestResults/integration
+```
+
+CI runs the build, unit, integration, and browser suites against a SQL Server
+service container, checks for vulnerable NuGet packages, and uploads the
+coverage reports. Run the audit locally with:
+
+```bash
+dotnet list Emplyo.sln package --vulnerable --include-transitive
+```
 
 ## Roles and authorization
 
@@ -320,11 +343,15 @@ See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the full verification log.
 Summary of the verified build/test state:
 
 - `dotnet build` — **succeeded, 0 warnings, 0 errors**.
-- `dotnet test tests/Emplyo.UnitTests` — **31 passed**.
-- `dotnet test tests/Emplyo.IntegrationTests` — **12 passed** (real SQL Server).
+- `dotnet test tests/Emplyo.UnitTests` — **227 passed**.
+- `dotnet test tests/Emplyo.IntegrationTests` — **75 passed** (real SQL Server).
+- `dotnet test tests/Emplyo.E2ETests` — **7 passed** (real Chromium).
+- Combined unit + integration coverage (union) — **57.8% lines, 63.9% branches**.
 - Manual HTTP checks: login/logout, role-based access enforcement, employee
   creation, duplicate rejection, attendance clock in/out, leave submission and
   approval with balance deduction, cross-employee access denial, and CSV export.
+- CI workflow builds and runs both suites against SQL Server and publishes
+  coverage artifacts.
 
 ## Security notes
 
