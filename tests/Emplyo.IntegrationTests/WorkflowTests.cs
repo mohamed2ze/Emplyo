@@ -86,7 +86,7 @@ public class WorkflowTests
         var employeeId = await TestData.EmployeeIdByNumberAsync(_factory, "EMP-0003");
         var leaveTypeId = await TestData.FirstLeaveTypeIdAsync(_factory);
 
-        var start = RandomFutureMonday();
+        var start = await NextFreeFutureMondayAsync(employeeId);
         var end = start.AddDays(2); // Wednesday => 3 working days
         var year = start.Year;
         var before = await TestData.UsedLeaveAsync(_factory, employeeId, leaveTypeId, year);
@@ -105,8 +105,9 @@ public class WorkflowTests
         }));
         Assert.True(submit.IsSuccessStatusCode, $"Submit returned {submit.StatusCode}");
 
-        var requestId = await LatestRequestIdAsync(employeeId);
+        var requestId = await RequestIdByDatesAsync(employeeId, start, end);
         Assert.NotNull(requestId);
+        Assert.Equal("Pending", await RequestStatusAsync(requestId.Value));
 
         var adminClient = _factory.CreateClient();
         await LoginHelper.LoginAsync(adminClient, EmplyoWebAppFactory.AdminEmail, EmplyoWebAppFactory.AdminPassword);
@@ -125,13 +126,23 @@ public class WorkflowTests
         Assert.True(after >= before + 3m, $"Expected balance to increase by 3, before={before} after={after}");
     }
 
-    private static DateOnly RandomFutureMonday()
+    private async Task<DateOnly> NextFreeFutureMondayAsync(int employeeId)
     {
-        // Spread test requests across future years/weeks to avoid overlap across repeated runs.
-        var year = 2031 + Random.Shared.Next(0, 4);
-        var date = new DateOnly(year, 1, 1);
-        while (date.DayOfWeek != DayOfWeek.Monday) date = date.AddDays(1);
-        return date.AddDays(7 * Random.Shared.Next(0, 50));
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var start = new DateOnly(Math.Max(2031, DateTime.UtcNow.Year + 5), 1, 1);
+        while (start.DayOfWeek != DayOfWeek.Monday) start = start.AddDays(1);
+
+        for (var week = 0; week < 520; week++, start = start.AddDays(7))
+        {
+            var end = start.AddDays(2);
+            var overlaps = await db.LeaveRequests.AsNoTracking()
+                .AnyAsync(l => l.EmployeeId == employeeId
+                    && l.StartDate <= end && start <= l.EndDate);
+            if (!overlaps) return start;
+        }
+
+        throw new InvalidOperationException("No free future week was found for the leave workflow test.");
     }
 
     private async Task<int> CountEmployeesWithNumber(string number)
@@ -141,12 +152,15 @@ public class WorkflowTests
         return await db.Employees.CountAsync(e => e.EmployeeNumber == number);
     }
 
-    private async Task<int?> LatestRequestIdAsync(int employeeId)
+    private async Task<int?> RequestIdByDatesAsync(int employeeId, DateOnly start, DateOnly end)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        return await db.LeaveRequests.Where(l => l.EmployeeId == employeeId)
-            .OrderByDescending(l => l.Id).Select(l => (int?)l.Id).FirstOrDefaultAsync();
+        return await db.LeaveRequests
+            .Where(l => l.EmployeeId == employeeId && l.StartDate == start && l.EndDate == end)
+            .OrderByDescending(l => l.Id)
+            .Select(l => (int?)l.Id)
+            .FirstOrDefaultAsync();
     }
 
     private async Task<string> RequestStatusAsync(int id)
