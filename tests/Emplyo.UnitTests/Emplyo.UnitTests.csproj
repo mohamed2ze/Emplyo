@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\src\Emplyo.Domain\Emplyo.Domain.csproj" />
     <ProjectReference Include="..\..\src\Emplyo.Application\Emplyo.Application.csproj" />
     <ProjectReference Include="..\..\src\Emplyo.Infrastructure\Emplyo.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Emplyo.Web\Emplyo.Web.csproj" />
   </ItemGroup>
 
 </Project>

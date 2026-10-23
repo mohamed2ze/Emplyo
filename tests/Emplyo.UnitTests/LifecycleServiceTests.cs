@@ -64,4 +64,56 @@ public class LifecycleServiceTests
         var reloaded = await db.Employees.FindAsync(employee.Id);
         Assert.Equal(EmploymentStatus.Terminated, reloaded!.EmploymentStatus);
     }
+
+    [Fact]
+    public async Task Offboarding_cannot_start_for_a_terminated_employee()
+    {
+        using var db = TestDb.Create();
+        var employee = await Seed.EmployeeAsync(db, status: EmploymentStatus.Terminated);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => Create(db).InitiateOffboardingAsync(
+            employee.Id, new OffboardingInitiateDto { DepartureDate = new DateOnly(2026, 8, 1) }));
+    }
+
+    [Fact]
+    public async Task A_second_active_offboarding_case_is_rejected()
+    {
+        using var db = TestDb.Create();
+        var employee = await Seed.EmployeeAsync(db, status: EmploymentStatus.Active);
+        var service = Create(db);
+        await service.InitiateOffboardingAsync(employee.Id, new OffboardingInitiateDto { DepartureDate = new DateOnly(2026, 8, 1) });
+
+        await Assert.ThrowsAsync<ConflictException>(() => service.InitiateOffboardingAsync(
+            employee.Id, new OffboardingInitiateDto { DepartureDate = new DateOnly(2026, 9, 1) }));
+    }
+
+    [Fact]
+    public async Task Completing_the_first_offboarding_task_moves_the_case_in_progress()
+    {
+        using var db = TestDb.Create();
+        var employee = await Seed.EmployeeAsync(db, status: EmploymentStatus.Active);
+        var service = Create(db);
+        var caseId = await service.InitiateOffboardingAsync(employee.Id, new OffboardingInitiateDto { DepartureDate = new DateOnly(2026, 8, 1) });
+        var detail = await service.GetOffboardingDetailAsync(caseId);
+
+        await service.SetOffboardingTaskStatusAsync(detail!.Tasks.First().Id, TaskItemStatus.Completed);
+
+        Assert.Equal(OffboardingStatus.InProgress, (await service.GetOffboardingDetailAsync(caseId))!.Status);
+    }
+
+    [Fact]
+    public async Task Adding_an_onboarding_task_trims_the_title_and_appends_it_to_the_order()
+    {
+        using var db = TestDb.Create();
+        var employee = await Seed.EmployeeAsync(db);
+        var service = Create(db);
+        await service.ApplyOnboardingTemplateAsync(employee.Id);
+
+        await service.AddOnboardingTaskAsync(employee.Id, new TaskFormDto { Title = "  Order a laptop  " });
+
+        var detail = await service.GetOnboardingDetailAsync(employee.Id);
+        var added = detail!.Tasks.Last();
+        Assert.Equal("Order a laptop", added.Title);
+        Assert.Equal(6, added.SortOrder);
+    }
 }
