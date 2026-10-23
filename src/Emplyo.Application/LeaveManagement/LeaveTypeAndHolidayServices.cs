@@ -130,16 +130,39 @@ public class HolidayService : IHolidayService
     public async Task<IReadOnlyList<HolidayDto>> GetUpcomingAsync(int count, CancellationToken ct = default)
     {
         var today = DateOnly.FromDateTime(_clock.UtcNow);
-        return await _db.Holidays.AsNoTracking()
-            .Where(h => h.Date >= today || h.IsRecurringAnnually)
-            .OrderBy(h => h.Date)
-            .Take(count)
+        var holidays = await _db.Holidays.AsNoTracking().ToListAsync(ct);
+
+        return holidays
             .Select(h => new HolidayDto
             {
-                Id = h.Id, Name = h.Name, Date = h.Date,
-                Description = h.Description, IsRecurringAnnually = h.IsRecurringAnnually
+                Id = h.Id,
+                Name = h.Name,
+                Date = NextOccurrence(h, today),
+                Description = h.Description,
+                IsRecurringAnnually = h.IsRecurringAnnually
             })
-            .ToListAsync(ct);
+            .Where(h => h.Date >= today)
+            .OrderBy(h => h.Date).ThenBy(h => h.Name)
+            .Take(count)
+            .ToList();
+    }
+
+    private static DateOnly NextOccurrence(Holiday holiday, DateOnly today)
+    {
+        if (!holiday.IsRecurringAnnually) return holiday.Date;
+
+        var occurrence = new DateOnly(
+            today.Year,
+            holiday.Date.Month,
+            Math.Min(holiday.Date.Day, DateTime.DaysInMonth(today.Year, holiday.Date.Month)));
+        if (occurrence < today)
+        {
+            occurrence = new DateOnly(
+                today.Year + 1,
+                holiday.Date.Month,
+                Math.Min(holiday.Date.Day, DateTime.DaysInMonth(today.Year + 1, holiday.Date.Month)));
+        }
+        return occurrence;
     }
 
     public async Task<HolidayFormDto?> GetFormAsync(int id, CancellationToken ct = default)

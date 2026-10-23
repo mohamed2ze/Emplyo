@@ -126,16 +126,13 @@ public class LeaveService : ILeaveService
         if (dto.IsHalfDay && dto.StartDate != dto.EndDate)
             throw new BusinessRuleException("A half-day request must start and end on the same date.");
 
-        var holidayDates = await _db.Holidays.AsNoTracking()
-            .Where(h => h.Date >= dto.StartDate && h.Date <= dto.EndDate)
-            .Select(h => h.Date).ToListAsync(ct);
+        var holidayDates = await GetHolidayDatesAsync(dto.StartDate, dto.EndDate, ct);
+        var workingDays = WorkingDayCalculator.CountWorkingDays(dto.StartDate, dto.EndDate, holidayDates);
 
-        var totalDays = dto.IsHalfDay
-            ? 0.5m
-            : WorkingDayCalculator.CountWorkingDays(dto.StartDate, dto.EndDate, holidayDates);
-
-        if (totalDays <= 0m)
+        if (workingDays <= 0m)
             throw new BusinessRuleException("The selected dates contain no working days.");
+
+        var totalDays = dto.IsHalfDay ? 0.5m : workingDays;
 
         var overlapping = await _db.LeaveRequests.AsNoTracking()
             .AnyAsync(l => l.EmployeeId == employeeId
@@ -327,6 +324,33 @@ public class LeaveService : ILeaveService
 
     private bool IsSelf(string? ownerUserId)
         => !string.IsNullOrEmpty(ownerUserId) && ownerUserId == _currentUser.UserId;
+
+    private async Task<IReadOnlyList<DateOnly>> GetHolidayDatesAsync(DateOnly start, DateOnly end, CancellationToken ct)
+    {
+        var holidays = await _db.Holidays.AsNoTracking()
+            .Where(h => h.IsRecurringAnnually || (h.Date >= start && h.Date <= end))
+            .Select(h => new { h.Date, h.IsRecurringAnnually })
+            .ToListAsync(ct);
+
+        var dates = new HashSet<DateOnly>();
+        foreach (var holiday in holidays)
+        {
+            if (!holiday.IsRecurringAnnually)
+            {
+                dates.Add(holiday.Date);
+                continue;
+            }
+
+            for (var year = start.Year; year <= end.Year; year++)
+            {
+                var day = Math.Min(holiday.Date.Day, DateTime.DaysInMonth(year, holiday.Date.Month));
+                var occurrence = new DateOnly(year, holiday.Date.Month, day);
+                if (occurrence >= start && occurrence <= end) dates.Add(occurrence);
+            }
+        }
+
+        return dates.ToList();
+    }
 
     private async Task ApplyBalanceChangeAsync(LeaveRequest request, bool deduct, CancellationToken ct)
     {
