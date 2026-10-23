@@ -86,7 +86,7 @@ public class WorkflowTests
         var employeeId = await TestData.EmployeeIdByNumberAsync(_factory, "EMP-0003");
         var leaveTypeId = await TestData.FirstLeaveTypeIdAsync(_factory);
 
-        var start = await NextFreeFutureMondayAsync(employeeId);
+        var start = await NextSubmittableFutureMondayAsync(employeeId, leaveTypeId);
         var end = start.AddDays(2); // Wednesday => 3 working days
         var year = start.Year;
         var before = await TestData.UsedLeaveAsync(_factory, employeeId, leaveTypeId, year);
@@ -126,23 +126,33 @@ public class WorkflowTests
         Assert.True(after >= before + 3m, $"Expected balance to increase by 3, before={before} after={after}");
     }
 
-    private async Task<DateOnly> NextFreeFutureMondayAsync(int employeeId)
+    private async Task<DateOnly> NextSubmittableFutureMondayAsync(int employeeId, int leaveTypeId)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var start = new DateOnly(Math.Max(2031, DateTime.UtcNow.Year + 5), 1, 1);
         while (start.DayOfWeek != DayOfWeek.Monday) start = start.AddDays(1);
 
-        for (var week = 0; week < 520; week++, start = start.AddDays(7))
+        // The test database is migrated and seeded but never reset, so earlier runs
+        // accumulate approved requests and per-year balance usage. A candidate week
+        // must therefore be both free of overlapping requests and leave enough
+        // remaining balance for three more working days.
+        for (var week = 0; week < 52 * 60; week++, start = start.AddDays(7))
         {
             var end = start.AddDays(2);
             var overlaps = await db.LeaveRequests.AsNoTracking()
                 .AnyAsync(l => l.EmployeeId == employeeId
                     && l.StartDate <= end && start <= l.EndDate);
-            if (!overlaps) return start;
+            if (overlaps) continue;
+
+            var remaining = await db.LeaveBalances.AsNoTracking()
+                .Where(b => b.EmployeeId == employeeId && b.LeaveTypeId == leaveTypeId && b.Year == start.Year)
+                .Select(b => (decimal?)b.Entitlement - b.Used)
+                .FirstOrDefaultAsync();
+            if (remaining is null || remaining >= 3m) return start;
         }
 
-        throw new InvalidOperationException("No free future week was found for the leave workflow test.");
+        throw new InvalidOperationException("No future week with leave capacity was found for the leave workflow test.");
     }
 
     private async Task<int> CountEmployeesWithNumber(string number)
