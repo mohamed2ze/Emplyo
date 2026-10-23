@@ -36,7 +36,7 @@ EMPLYO_DEV_PASSWORD="Emplyo!Dev2026" dotnet run --project src/Emplyo.Web -- seed
 # Demo accounts and a presentation walkthrough: see docs/DEMO.md
 
 # 7. Run
-dotnet run --project src/Emplyo.Web
+./scripts/dev.sh    # starts the mssql container if needed, then runs the app
 ```
 
 ## Common commands
@@ -44,7 +44,7 @@ dotnet run --project src/Emplyo.Web
 | Task | Command |
 | --- | --- |
 | Build | `dotnet build` |
-| Run | `dotnet run --project src/Emplyo.Web` |
+| Run | `./scripts/dev.sh` (ensures the `mssql` container is up first) or `dotnet run --project src/Emplyo.Web` |
 | Apply migrations | `dotnet run --project src/Emplyo.Web -- migrate` |
 | Add migration | `dotnet ef migrations add <Name> --project src/Emplyo.Infrastructure --startup-project src/Emplyo.Web --output-dir Persistence/Migrations` |
 | Unit tests | `dotnet test tests/Emplyo.UnitTests` |
@@ -53,6 +53,14 @@ dotnet run --project src/Emplyo.Web
 | Health check | `curl http://localhost:5076/health` |
 | Provision admin | `EMPLYO_ADMIN_EMAIL=... EMPLYO_ADMIN_PASSWORD=... dotnet run --project src/Emplyo.Web -- seed-admin` |
 | Seed dev data | `EMPLYO_DEV_PASSWORD=... dotnet run --project src/Emplyo.Web -- seed-dev-data` |
+
+`scripts/dev.sh` is a thin wrapper: it starts the SQL Server container if it is
+stopped, waits until the engine is ready to accept logins, and then executes
+`dotnet run --project src/Emplyo.Web -- "$@"`. Any arguments are forwarded, so
+`./scripts/dev.sh migrate` runs a maintenance command. Override the container
+name or port with `EMPLYO_SQL_CONTAINER` / `EMPLYO_SQL_PORT`, or set
+`EMPLYO_SKIP_DB_CHECK=1` when your SQL Server is not managed by Docker. The
+VS Code launch configuration runs it automatically before starting the debugger.
 
 ## Maintenance commands
 

@@ -264,6 +264,14 @@ To choose a URL explicitly:
 ASPNETCORE_URLS=http://localhost:5076 dotnet run --project src/Emplyo.Web
 ```
 
+If SQL Server runs as a local Docker container (the documented setup), the dev
+helper starts it when needed and waits until it accepts connections:
+
+```bash
+./scripts/dev.sh                 # ensure DB, then run the web app
+./scripts/dev.sh migrate         # ensure DB, then run a maintenance command
+```
+
 Health check: `GET /health` returns `200` when SQL Server is reachable.
 
 ## Running tests
@@ -333,7 +341,9 @@ Summary of the verified build/test state:
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). A multi-stage [`Dockerfile`](Dockerfile)
 and an optional [`docker-compose.yml`](docker-compose.yml) are provided. The
-compose file does **not** create or own SQL Server by default.
+compose file does **not** create or own SQL Server by default. The image runs as
+a non-root user, exposes a Docker health check on `/health`, and keeps documents
+and Data Protection keys in named volumes.
 
 ## Known limitations
 

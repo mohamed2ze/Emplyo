@@ -7,9 +7,14 @@
 # On Linux, the connection string below reaches a SQL Server published on the
 # host's localhost:1433 through the special host-gateway address.
 #
+# The web container runs as the unprivileged "app" user. Uploaded documents and
+# Data Protection keys are kept in named volumes so they survive image rebuilds.
+#
 # Usage:
 #   EMPLYO_DB_PASSWORD='<your-sa-password>' docker compose up --build
 #
+# Maintenance commands (see docs/DEPLOYMENT.md):
+#   docker compose run --rm --entrypoint dotnet emplyo-web Emplyo.Web.dll migrate
 services:
   emplyo-web:
     build:
@@ -21,10 +26,18 @@ services:
       - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      Storage__DocumentsRoot: /var/lib/emplyo/documents
       # Adjust this to point at your existing SQL Server. Never commit real secrets.
       ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=Emplyo;User Id=sa;Password=${EMPLYO_DB_PASSWORD:?set EMPLYO_DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      # Uploaded documents. Back these up together with the database.
+      - emplyo_documents:/var/lib/emplyo/documents
+      # ASP.NET Core Data Protection keys; keeps sessions valid across redeploys.
+      - emplyo_dp_keys:/home/app/.aspnet/DataProtection-Keys
+    security_opt:
+      - no-new-privileges:true
     restart: unless-stopped
 
   # Optional: a brand-new SQL Server for isolated environments only.
@@ -40,5 +53,7 @@ services:
   #   volumes:
   #     - emplyo_sqlserver_data:/var/opt/mssql
 
-# volumes:
-#   emplyo_sqlserver_data:
+volumes:
+  emplyo_documents:
+  emplyo_dp_keys:
+  # emplyo_sqlserver_data:

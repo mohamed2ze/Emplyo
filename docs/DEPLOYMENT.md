@@ -88,19 +88,55 @@ file intentionally does **not** define SQL Server, to avoid conflicting with you
 existing instance. An isolated SQL Server service is included as a commented
 block for environments that truly need one.
 
+The image is hardened by default:
+
+- It runs as the unprivileged `app` user (UID `1654`), not root.
+- A Docker `HEALTHCHECK` polls `GET /health`; `docker compose ps` reports the
+  container as `healthy` or `unhealthy`.
+- Uploaded documents and Data Protection keys are kept in the named volumes
+  `emplyo_documents` and `emplyo_dp_keys`. Without them, documents are lost and
+  all sessions are invalidated whenever the container is recreated.
+
+### Maintenance commands
+
+Migrations and provisioning run as one-off containers built from the same image:
+
+```bash
+# Apply migrations
+docker compose run --rm --entrypoint dotnet emplyo-web Emplyo.Web.dll migrate
+
+# Provision the first administrator
+docker compose run --rm --entrypoint dotnet \
+  -e EMPLYO_ADMIN_EMAIL="admin@yourcompany.com" \
+  -e EMPLYO_ADMIN_PASSWORD="<strong-pw>" \
+  emplyo-web Emplyo.Web.dll seed-admin
+```
+
 Build the image directly if preferred:
 
 ```bash
 docker build -t emplyo-web:latest .
 docker run --rm -p 8080:8080 \
   -e ConnectionStrings__DefaultConnection="Server=host.docker.internal,1433;Database=Emplyo;User Id=<user>;Password=<pw>;TrustServerCertificate=True" \
+  -e Storage__DocumentsRoot=/var/lib/emplyo/documents \
+  -v emplyo_documents:/var/lib/emplyo/documents \
+  -v emplyo_dp_keys:/home/app/.aspnet/DataProtection-Keys \
   --add-host host.docker.internal:host-gateway \
   emplyo-web:latest
 ```
 
+If you bind-mount a host directory instead of using the named volume for
+`Storage__DocumentsRoot`, make sure it is writable by UID `1654` (for example
+`chown -R 1654:1654 /path/on/host`).
+
+Secrets are passed as environment variables and are therefore visible to anyone
+who can run `docker inspect`; restrict Docker access accordingly or supply them
+through your orchestrator's secret mechanism.
+
 ## Health checks and monitoring
 
-- Liveness/readiness: `GET /health` (checks SQL Server connectivity).
+- Liveness/readiness: `GET /health` (checks SQL Server connectivity). The Docker
+  image declares a `HEALTHCHECK` against this endpoint.
 - Use structured logs (console) for aggregation; sensitive values are not logged.
 
 ## Hardening checklist
@@ -110,6 +146,8 @@ docker run --rm -p 8080:8080 \
 - [ ] Dedicated least-privilege database login (no `sa`).
 - [ ] Secrets provided via environment variables or a secret manager.
 - [ ] Persistent volume for `Storage__DocumentsRoot`, backed up with the database.
+- [ ] Persistent volume for Data Protection keys when running in Docker
+      (`/home/app/.aspnet/DataProtection-Keys`), otherwise redeploys log out users.
 - [ ] Regular SQL Server backups.
 - [ ] First administrator provisioned; default/demo accounts not used.
 - [ ] Organization time zone configured in Settings.
