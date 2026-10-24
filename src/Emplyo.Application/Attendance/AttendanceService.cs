@@ -211,6 +211,9 @@ public class AttendanceService : IAttendanceService
             ? await _db.AttendanceRecords.FirstOrDefaultAsync(a => a.Id == recordId, ct)
             : await _db.AttendanceRecords.FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.WorkDate == dto.WorkDate, ct);
 
+        if (recordId.HasValue && record is not null && record.EmployeeId != employeeId)
+            throw new ForbiddenException("The selected attendance record does not belong to this employee.");
+
         var now = _clock.UtcNow;
         if (record is null)
         {

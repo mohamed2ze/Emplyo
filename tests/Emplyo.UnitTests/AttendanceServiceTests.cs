@@ -172,6 +172,33 @@ public class AttendanceServiceTests
     }
 
     [Fact]
+    public async Task Correction_cannot_reassign_another_employees_record()
+    {
+        using var db = TestDb.Create();
+        var employee = await Seed.EmployeeAsync(db, "EMP-0001", "one@test.local");
+        var other = await Seed.EmployeeAsync(db, "EMP-0002", "two@test.local");
+        var record = new Emplyo.Domain.Entities.AttendanceRecord
+        {
+            EmployeeId = other.Id,
+            WorkDate = new DateOnly(2026, 6, 15),
+            ClockInUtc = new DateTime(2026, 6, 15, 9, 0, 0, DateTimeKind.Utc),
+            Status = AttendanceStatus.Present
+        };
+        db.AttendanceRecords.Add(record);
+        await db.SaveChangesAsync();
+        var service = Create(db, new FakeClock());
+
+        await Assert.ThrowsAsync<ForbiddenException>(() => service.CorrectAsync(new AttendanceCorrectionDto
+        {
+            WorkDate = new DateOnly(2026, 6, 15),
+            ClockIn = new DateTime(2026, 6, 15, 10, 0, 0),
+            Status = AttendanceStatus.Present
+        }, record.Id, employee.Id));
+
+        Assert.Equal(other.Id, (await db.AttendanceRecords.FindAsync(record.Id))!.EmployeeId);
+    }
+
+    [Fact]
     public async Task Correction_creates_a_record_and_records_who_corrected_it()
     {
         using var db = TestDb.Create();
