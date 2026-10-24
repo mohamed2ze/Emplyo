@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Emplyo.Application.Common.Interfaces;
 using Emplyo.Infrastructure.Services;
 using Emplyo.Web.Authorization;
@@ -9,8 +10,13 @@ namespace Emplyo.Web.Controllers;
 
 public class SettingsViewModel
 {
+    [StringLength(500)]
     public string OrganizationName { get; set; } = "Emplyo";
+
+    [StringLength(150)]
     public string OrganizationTimeZone { get; set; } = "UTC";
+
+    [StringLength(10)]
     public string WorkDayStart { get; set; } = "09:00";
     public IReadOnlyList<(string Key, string Value, string? Description)> All { get; set; } = Array.Empty<(string, string, string?)>();
 }
