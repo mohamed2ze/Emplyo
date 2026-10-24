@@ -11,32 +11,22 @@ namespace Emplyo.Web.Services;
 /// </summary>
 public static class CliCommands
 {
-    public static async Task<bool> TryRunAsync(WebApplication app, string[] args)
+    public static async Task<int?> TryRunAsync(WebApplication app, string[] args)
     {
-        if (args.Length == 0) return false;
+        if (args.Length == 0) return null;
 
         var command = args[0].TrimStart('-').ToLowerInvariant();
-        switch (command)
+        return command switch
         {
-            case "migrate":
-                await MigrateAsync(app);
-                return true;
-            case "seed-admin":
-            case "create-admin":
-                await SeedAdminAsync(app, args);
-                return true;
-            case "seed-dev-data":
-                await SeedDevDataAsync(app, args);
-                return true;
-            case "help":
-                PrintHelp();
-                return true;
-            default:
-                return false;
-        }
+            "migrate" => await MigrateAsync(app),
+            "seed-admin" or "create-admin" => await SeedAdminAsync(app, args),
+            "seed-dev-data" => await SeedDevDataAsync(app, args),
+            "help" => PrintHelp(),
+            _ => null
+        };
     }
 
-    private static async Task MigrateAsync(WebApplication app)
+    private static async Task<int> MigrateAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -47,9 +37,10 @@ public static class CliCommands
         await initializer.EnsureRolesAsync();
         await initializer.EnsureDefaultSettingsAsync();
         Console.WriteLine("Migrations applied and baseline settings ensured.");
+        return 0;
     }
 
-    private static async Task SeedAdminAsync(WebApplication app, string[] args)
+    private static async Task<int> SeedAdminAsync(WebApplication app, string[] args)
     {
         var email = GetOption(args, "--email") ?? Environment.GetEnvironmentVariable("EMPLYO_ADMIN_EMAIL");
         var password = GetOption(args, "--password") ?? Environment.GetEnvironmentVariable("EMPLYO_ADMIN_PASSWORD");
@@ -60,7 +51,7 @@ public static class CliCommands
             Console.Error.WriteLine(
                 "Administrator email and password are required. Provide them via environment variables " +
                 "EMPLYO_ADMIN_EMAIL and EMPLYO_ADMIN_PASSWORD (recommended) or --email/--password (not recommended: visible in shell history).");
-            return;
+            return 1;
         }
 
         using var scope = app.Services.CreateScope();
@@ -76,11 +67,12 @@ public static class CliCommands
         await initializer.EnsureRolesAsync();
         await initializer.EnsureDefaultSettingsAsync();
 
-        var (created, message) = await initializer.EnsureAdministratorAsync(email, password, name);
+        var (_, message) = await initializer.EnsureAdministratorAsync(email, password, name);
         Console.WriteLine(message);
+        return message.StartsWith("Failed", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
     }
 
-    private static async Task SeedDevDataAsync(WebApplication app, string[] args)
+    private static async Task<int> SeedDevDataAsync(WebApplication app, string[] args)
     {
         var password = GetOption(args, "--password")
             ?? Environment.GetEnvironmentVariable("EMPLYO_DEV_PASSWORD");
@@ -90,7 +82,7 @@ public static class CliCommands
             Console.Error.WriteLine(
                 "A password for the demo accounts is required. Provide it via the EMPLYO_DEV_PASSWORD " +
                 "environment variable (recommended) or --password (not recommended: visible in shell history).");
-            return;
+            return 1;
         }
 
         using var scope = app.Services.CreateScope();
@@ -107,6 +99,7 @@ public static class CliCommands
         await initializer.SeedDevelopmentDataAsync(password);
         Console.WriteLine("Development data seeded. Demo accounts: admin@emplyo.local, hr@emplyo.local, manager@emplyo.local, employee@emplyo.local");
         Console.WriteLine("Demo accounts use the password supplied via EMPLYO_DEV_PASSWORD.");
+        return 0;
     }
 
     private static string? GetOption(string[] args, string name)
@@ -119,12 +112,13 @@ public static class CliCommands
         return null;
     }
 
-    private static void PrintHelp()
+    private static int PrintHelp()
     {
         Console.WriteLine("Emplyo maintenance commands:");
         Console.WriteLine("  migrate          Apply EF Core migrations and ensure roles/settings.");
         Console.WriteLine("  seed-admin       Provision the first administrator (requires EMPLYO_ADMIN_EMAIL / EMPLYO_ADMIN_PASSWORD).");
         Console.WriteLine("  seed-dev-data    Seed fictional development data (requires EMPLYO_DEV_PASSWORD; dev only).");
         Console.WriteLine("  help             Show this help.");
+        return 0;
     }
 }

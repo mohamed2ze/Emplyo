@@ -79,8 +79,10 @@ builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database");
 var app = builder.Build();
 
 // Non-web maintenance commands (migrations, administrator provisioning, dev seed).
-if (await CliCommands.TryRunAsync(app, args))
+var cliExitCode = await CliCommands.TryRunAsync(app, args);
+if (cliExitCode.HasValue)
 {
+    Environment.ExitCode = cliExitCode.Value;
     return;
 }
 
