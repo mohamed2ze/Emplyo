@@ -23,6 +23,7 @@ dotnet test tests/Emplyo.UnitTests                      # unit tests
 dotnet test tests/Emplyo.IntegrationTests              # needs SQL Server on localhost:1433
 dotnet test tests/Emplyo.E2ETests                      # real Chromium browser smoke tests
 dotnet test                                             # everything
+./scripts/coverage.sh                                   # merged coverage + ratchet gate
 ./scripts/dev.sh                                        # ensure SQL Server container, run the app
 dotnet run --project src/Emplyo.Web -- migrate          # apply DB migrations (explicit, never automatic)
 dotnet ef migrations add <Name> --project src/Emplyo.Infrastructure \

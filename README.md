@@ -301,16 +301,20 @@ migrations and seed their own data; they never touch the application database.
 Browser tests use a separate **`Emplyo_E2E`** database and fixed test-only demo
 credentials; they never touch the application database.
 
-Coverage is collected with the existing Coverlet collector:
+Coverage is collected with the existing Coverlet collector and enforced by
+`scripts/coverage.sh`:
 
 ```bash
-dotnet test tests/Emplyo.UnitTests --collect:"XPlat Code Coverage" --results-directory TestResults/unit
-dotnet test tests/Emplyo.IntegrationTests --collect:"XPlat Code Coverage" --results-directory TestResults/integration
+./scripts/coverage.sh
 ```
 
+The gate currently requires at least 57% line and 63% branch coverage; override
+with `EMPLYO_MIN_LINE_COVERAGE` / `EMPLYO_MIN_BRANCH_COVERAGE` when reviewing the
+ratchet deliberately.
+
 CI runs the build, unit, integration, and browser suites against a SQL Server
-service container, checks for vulnerable NuGet packages, and uploads the
-coverage reports. Run the audit locally with:
+service container, checks for vulnerable NuGet packages, enforces the coverage
+ratchet, and uploads the coverage reports. Run the audit locally with:
 
 ```bash
 dotnet list Emplyo.sln package --vulnerable --include-transitive
@@ -343,10 +347,10 @@ See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the full verification log.
 Summary of the verified build/test state:
 
 - `dotnet build` — **succeeded, 0 warnings, 0 errors**.
-- `dotnet test tests/Emplyo.UnitTests` — **227 passed**.
-- `dotnet test tests/Emplyo.IntegrationTests` — **75 passed** (real SQL Server).
+- `dotnet test tests/Emplyo.UnitTests` — **228 passed**.
+- `dotnet test tests/Emplyo.IntegrationTests` — **80 passed** (real SQL Server).
 - `dotnet test tests/Emplyo.E2ETests` — **7 passed** (real Chromium).
-- Combined unit + integration coverage (union) — **57.8% lines, 63.9% branches**.
+- Combined unit + integration coverage (union) — **58.0% lines, 64.0% branches** (enforced by `./scripts/coverage.sh`).
 - Manual HTTP checks: login/logout, role-based access enforcement, employee
   creation, duplicate rejection, attendance clock in/out, leave submission and
   approval with balance deduction, cross-employee access denial, and CSV export.

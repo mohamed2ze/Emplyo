@@ -54,6 +54,7 @@ EMPLYO_DEV_PASSWORD="Emplyo!Dev2026" dotnet run --project src/Emplyo.Web -- seed
 | Install Playwright Chromium | `pwsh tests/Emplyo.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium` |
 | Unit coverage | `dotnet test tests/Emplyo.UnitTests --collect:"XPlat Code Coverage" --results-directory TestResults/unit` |
 | Integration coverage | `dotnet test tests/Emplyo.IntegrationTests --collect:"XPlat Code Coverage" --results-directory TestResults/integration` |
+| Coverage gate | `./scripts/coverage.sh` |
 | Vulnerable dependencies | `dotnet list Emplyo.sln package --vulnerable --include-transitive` |
 | Health check | `curl http://localhost:5076/health` |
 | Provision admin | `EMPLYO_ADMIN_EMAIL=... EMPLYO_ADMIN_PASSWORD=... dotnet run --project src/Emplyo.Web -- seed-admin` |
@@ -75,6 +76,9 @@ VS Code launch configuration runs it automatically before starting the debugger.
 - `seed-admin` — provision the first administrator (idempotent, guarded).
 - `seed-dev-data` — insert fictional development data (idempotent).
 - `help` — show command help.
+
+Commands exit with a non-zero status when required credentials or seed passwords
+are missing, so deployment or automation jobs fail visibly instead of silently.
 
 ## Testing approach
 
@@ -100,14 +104,16 @@ VS Code launch configuration runs it automatically before starting the debugger.
   leave submission/cancellation, and basic accessibility structure. Install the
   Chromium browser once with the command in the table above.
 - **Coverage** uses the existing `coverlet.collector` package and emits Cobertura
-  reports; no separate coverage tool is required. Coverage is a diagnostic, not a
-  guarantee of correctness.
+  reports; `scripts/coverage.sh` merges the unit and integration reports and
+  enforces the ratchet (defaults: 57% lines, 63% branches; override with
+  `EMPLYO_MIN_LINE_COVERAGE` / `EMPLYO_MIN_BRANCH_COVERAGE`). Coverage is a
+  diagnostic, not a guarantee of correctness.
 - **Dependency security** is checked with the .NET SDK's built-in vulnerable-package
   audit; the CI job fails if a vulnerable NuGet package is reported.
-- **CI** (`.github/workflows/ci.yml`) builds with zero warnings and runs unit,
-  integration, and browser suites against a SQL Server service container, uploading
-  coverage artifacts. The pipeline is reproducible from the repository without
-  local secrets.
+- **CI** (`.github/workflows/ci.yml`) builds with zero warnings, runs the
+  vulnerability audit, enforces the coverage gate, and runs unit, integration, and
+  browser suites against a SQL Server service container. Coverage artifacts are
+  uploaded. The pipeline is reproducible from the repository without local secrets.
 
 ## Verification log
 
@@ -117,10 +123,10 @@ container on `localhost:1433`):
 | Check | Result |
 | --- | --- |
 | `dotnet build` | Succeeded — 0 warnings, 0 errors |
-| `dotnet test tests/Emplyo.UnitTests` | **227 passed**, 0 failed |
-| `dotnet test tests/Emplyo.IntegrationTests` | **75 passed**, 0 failed |
+| `dotnet test tests/Emplyo.UnitTests` | **228 passed**, 0 failed |
+| `dotnet test tests/Emplyo.IntegrationTests` | **80 passed**, 0 failed |
 | `dotnet test tests/Emplyo.E2ETests` | **7 passed**, 0 failed |
-| Coverage (unit + integration, union) | 57.8% lines, 63.9% branches |
+| Coverage gate (unit + integration, union) | 58.0% lines, 64.0% branches |
 | `InitialCreate` migration applied to SQL Server | Succeeded |
 | `seed-dev-data` | Departments, positions, employees, leave types, holidays, attendance, announcements, demo users |
 | App startup + `GET /health` | `200` |
