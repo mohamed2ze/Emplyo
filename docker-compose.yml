@@ -12,6 +12,8 @@
 #
 # Usage:
 #   EMPLYO_DB_PASSWORD='<your-sa-password>' docker compose up --build
+# If the app is not accessed via localhost, set EMPLYO_ALLOWED_HOSTS to the real
+# host name(s), e.g. EMPLYO_ALLOWED_HOSTS='emplyo.example.com'.
 #
 # Maintenance commands (see docs/DEPLOYMENT.md):
 #   docker compose run --rm --entrypoint dotnet emplyo-web Emplyo.Web.dll migrate
@@ -28,7 +30,11 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       Storage__DocumentsRoot: /var/lib/emplyo/documents
       # Adjust this to point at your existing SQL Server. Never commit real secrets.
+      # For production use a least-privilege login and a trusted server certificate
+      # (TrustServerCertificate=False). True is for local self-signed instances.
       ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=Emplyo;User Id=sa;Password=${EMPLYO_DB_PASSWORD:?set EMPLYO_DB_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
+      App__PublicBaseUrl: "${EMPLYO_PUBLIC_BASE_URL:-}"
+      AllowedHosts: "${EMPLYO_ALLOWED_HOSTS:-localhost;127.0.0.1}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -38,6 +44,8 @@ services:
       - emplyo_dp_keys:/home/app/.aspnet/DataProtection-Keys
     security_opt:
       - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
 
   # Optional: a brand-new SQL Server for isolated environments only.
