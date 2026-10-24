@@ -113,6 +113,8 @@ public class UserAdminService : IUserAdminService
         var user = await _identity.FindByIdAsync(id, ct)
             ?? throw new NotFoundException("User not found.");
 
+        await EnsureAnotherAdministratorRemainsAsync(user, dto.Role, dto.IsActive, ct);
+
         Employee? employeeToLink = null;
         if (dto.EmployeeId.HasValue)
         {
@@ -136,6 +138,7 @@ public class UserAdminService : IUserAdminService
         }
 
         await _db.SaveChangesAsync(ct);
+        await _identity.RefreshSecurityStampAsync(id, ct);
 
         await _audit.RecordAsync(new AuditEntry
         {
@@ -154,6 +157,16 @@ public class UserAdminService : IUserAdminService
         {
             Action = "User.PasswordReset", TargetType = "ApplicationUser", TargetId = id
         }, ct);
+    }
+
+    private async Task EnsureAnotherAdministratorRemainsAsync(AppUserInfo user, string newRole, bool newIsActive, CancellationToken ct)
+    {
+        if (!user.IsActive || !user.Roles.Contains("Administrator")) return;
+        if (newIsActive && string.Equals(newRole, "Administrator", StringComparison.Ordinal)) return;
+
+        var otherAdministrators = await _identity.GetUsersInRoleAsync("Administrator", ct);
+        if (!otherAdministrators.Any(u => u.Id != user.Id && u.IsActive))
+            throw new BusinessRuleException("At least one active administrator account must remain.");
     }
 
     public async Task<IReadOnlyList<(int Id, string Name, string Number)>> GetLinkableEmployeesAsync(string? excludeUserId = null, CancellationToken ct = default)

@@ -96,6 +96,9 @@ public class IdentityService : IIdentityService
 
         if (toRemove.Count > 0) await _userManager.RemoveFromRolesAsync(user, toRemove);
         if (toAdd.Count > 0) await _userManager.AddToRolesAsync(user, toAdd);
+
+        if (toRemove.Count > 0 || toAdd.Count > 0)
+            await _userManager.UpdateSecurityStampAsync(user);
     }
 
     public async Task<bool> ResetPasswordAsync(string userId, string newPassword, CancellationToken ct = default)
@@ -124,6 +127,14 @@ public class IdentityService : IIdentityService
             user.LockoutEnabled = true;
         }
         await _userManager.UpdateAsync(user);
+        await _userManager.UpdateSecurityStampAsync(user);
+    }
+
+    public async Task RefreshSecurityStampAsync(string userId, CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is not null)
+            await _userManager.UpdateSecurityStampAsync(user);
     }
 
     public async Task RecordLoginAsync(string userId, CancellationToken ct = default)

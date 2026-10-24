@@ -31,6 +31,7 @@ public interface IIdentityService
     Task SetRolesAsync(string userId, IReadOnlyCollection<string> roles, CancellationToken ct = default);
     Task<bool> ResetPasswordAsync(string userId, string newPassword, CancellationToken ct = default);
     Task SetActiveAsync(string userId, bool isActive, CancellationToken ct = default);
+    Task RefreshSecurityStampAsync(string userId, CancellationToken ct = default);
     Task RecordLoginAsync(string userId, CancellationToken ct = default);
 }
 

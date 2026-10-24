@@ -212,6 +212,9 @@ public class FakeIdentityService : IIdentityService
         return Task.CompletedTask;
     }
 
+    public Task RefreshSecurityStampAsync(string userId, CancellationToken ct = default)
+        => Task.CompletedTask;
+
     public Task RecordLoginAsync(string userId, CancellationToken ct = default)
     {
         if (Users.TryGetValue(userId, out var user)) user.LastLoginUtc = DateTime.UtcNow;

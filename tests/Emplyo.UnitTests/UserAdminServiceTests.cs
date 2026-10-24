@@ -172,6 +172,38 @@ public class UserAdminServiceTests
     }
 
     [Fact]
+    public async Task Update_cannot_remove_or_deactivate_the_last_active_administrator()
+    {
+        using var db = TestDb.Create();
+        var identity = new FakeIdentityService();
+        identity.AddUser("admin-1", "admin@test.local", "Admin One", isActive: true, "Administrator");
+        var service = Create(db, identity);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            service.UpdateAsync("admin-1", new EditUserDto { Role = "Employee", IsActive = true }));
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            service.UpdateAsync("admin-1", new EditUserDto { Role = "Administrator", IsActive = false }));
+
+        Assert.Equal("Administrator", Assert.Single(identity.Users["admin-1"].Roles));
+        Assert.True(identity.Users["admin-1"].IsActive);
+    }
+
+    [Fact]
+    public async Task Update_allows_removing_an_administrator_when_another_active_one_exists()
+    {
+        using var db = TestDb.Create();
+        var identity = new FakeIdentityService();
+        identity.AddUser("admin-1", "admin1@test.local", "Admin One", isActive: true, "Administrator");
+        identity.AddUser("admin-2", "admin2@test.local", "Admin Two", isActive: true, "Administrator");
+        var service = Create(db, identity);
+
+        await service.UpdateAsync("admin-1", new EditUserDto { Role = "Employee", IsActive = true });
+
+        Assert.Equal("Employee", Assert.Single(identity.Users["admin-1"].Roles));
+        Assert.Equal("Administrator", Assert.Single(identity.Users["admin-2"].Roles));
+    }
+
+    [Fact]
     public async Task Reset_password_rejects_an_unknown_user()
     {
         using var db = TestDb.Create();
