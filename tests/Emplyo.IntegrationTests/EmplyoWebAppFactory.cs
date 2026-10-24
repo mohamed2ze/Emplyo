@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +26,8 @@ public class EmplyoWebAppFactory : WebApplicationFactory<Program>
     public const string EmployeePassword = "IntTest!Employee2026";
 
     public string ConnectionString { get; private set; } = string.Empty;
+    public int AuthRateLimitPerMinute { get; init; } = 100_000;
+    public int SecurityStampValidationMinutes { get; init; } = 60;
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private bool _initialized;
@@ -32,6 +35,12 @@ public class EmplyoWebAppFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+        builder.ConfigureAppConfiguration((_, configuration) =>
+            configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Security:AuthRateLimitPerMinute"] = AuthRateLimitPerMinute.ToString(),
+                ["Security:SecurityStampValidationMinutes"] = SecurityStampValidationMinutes.ToString()
+            }));
 
         var baseConnection = Environment.GetEnvironmentVariable("EMPLYO_TEST_CONNECTION") ?? ReadConnectionFromSecretsFile();
         var testConnection = baseConnection?.Replace("Database=Emplyo;", "Database=Emplyo_Test;");
