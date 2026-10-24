@@ -77,11 +77,18 @@ public class DomainExceptionFilter : IExceptionFilter
         {
             var sameHost = string.Equals(absolute.Authority, context.Request.Host.Value, StringComparison.OrdinalIgnoreCase);
             var webScheme = absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps;
-            return sameHost && webScheme ? absolute.PathAndQuery + absolute.Fragment : "/";
+            if (!sameHost || !webScheme) return "/";
+
+            var path = absolute.PathAndQuery;
+            return IsSafeLocalPath(path) ? path + absolute.Fragment : "/";
         }
 
-        return referer.StartsWith('/') && !referer.StartsWith("//") && !referer.StartsWith("/\\")
-            ? referer
-            : "/";
+        return IsSafeLocalPath(referer) ? referer : "/";
     }
+
+    private static bool IsSafeLocalPath(string value)
+        => value.StartsWith('/')
+            && !value.StartsWith("//")
+            && !value.StartsWith("/\\")
+            && !value.Contains('\\');
 }
