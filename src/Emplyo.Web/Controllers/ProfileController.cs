@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Emplyo.Application.Common.Interfaces;
 using Emplyo.Application.Employees;
 using Emplyo.Infrastructure.Identity;
+using Emplyo.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +15,19 @@ public class ContactInfoViewModel
     [Display(Name = "Phone number")]
     public string? PhoneNumber { get; set; }
 
-    [Display(Name = "Address")]
+    [Display(Name = "Address"), StringLength(200)]
     public string? AddressLine { get; set; }
+
+    [StringLength(100)]
     public string? City { get; set; }
+
+    [StringLength(100)]
     public string? Country { get; set; }
 
-    [Display(Name = "Emergency contact name")]
+    [Display(Name = "Emergency contact name"), StringLength(150)]
     public string? EmergencyContactName { get; set; }
 
-    [Display(Name = "Emergency contact phone")]
+    [Display(Name = "Emergency contact phone"), StringLength(30)]
     public string? EmergencyContactPhone { get; set; }
 }
 
@@ -145,20 +150,14 @@ public class ProfileController : Controller
         var employeeId = _currentUser.EmployeeId;
         if (!employeeId.HasValue) return View("~/Views/Home/NoEmployee.cshtml");
 
-        if (photo is null || photo.Length == 0)
+        var validationError = await ImageUploads.ValidateAsync(photo, ct);
+        if (validationError is not null)
         {
-            TempData["Error"] = "Select an image file.";
+            TempData["Error"] = validationError;
             return RedirectToAction(nameof(Index));
         }
 
-        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        if (!allowed.Contains(Path.GetExtension(photo.FileName), StringComparer.OrdinalIgnoreCase) || photo.Length > 4 * 1024 * 1024)
-        {
-            TempData["Error"] = "Profile photo must be a JPG, PNG or WEBP image under 4 MB.";
-            return RedirectToAction(nameof(Index));
-        }
-
-        await using var stream = photo.OpenReadStream();
+        await using var stream = photo!.OpenReadStream();
         var stored = await _storage.SaveAsync(stream, photo.FileName, ct);
         await _employees.UpdatePhotoAsync(employeeId.Value, stored, ct);
         TempData["Success"] = "Profile photo updated.";

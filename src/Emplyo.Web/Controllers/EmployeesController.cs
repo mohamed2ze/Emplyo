@@ -60,22 +60,16 @@ public class EmployeesController : Controller
     {
         var employee = await _employees.GetByIdAsync(id, ct);
         if (employee is null) return NotFound();
+        if (!CanViewEmployee(employee)) return Forbid();
 
-        var isStaff = User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.HrManager);
+        var isStaff = IsStaff;
         var isSelf = _currentUser.EmployeeId == id;
-
-        if (!isStaff && !isSelf)
-        {
-            // Managers may view their direct reports only.
-            var isManager = employee.ManagerId.HasValue && employee.ManagerId == _currentUser.EmployeeId;
-            if (!isManager) return Forbid();
-        }
 
         ViewData["Title"] = employee.FullName;
         var model = new EmployeeDetailsViewModel
         {
             Employee = employee,
-            CanViewSensitive = User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.HrManager),
+            CanViewSensitive = IsStaff,
             CanEdit = isStaff,
             IsSelf = isSelf,
             RecentAttendance = await _attendance.GetForEmployeeAsync(id, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)), DateOnly.FromDateTime(DateTime.UtcNow), ct),
@@ -191,21 +185,14 @@ public class EmployeesController : Controller
     [Authorize(Policy = Policies.HrOrAdmin)]
     public async Task<IActionResult> UploadPhoto(int id, IFormFile? photo, CancellationToken ct)
     {
-        if (photo is null || photo.Length == 0)
+        var validationError = await ImageUploads.ValidateAsync(photo, ct);
+        if (validationError is not null)
         {
-            TempData["Error"] = "Select an image file to upload.";
+            TempData["Error"] = validationError;
             return RedirectToAction(nameof(Edit), new { id });
         }
 
-        var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        var ext = Path.GetExtension(photo.FileName);
-        if (!allowed.Contains(ext, StringComparer.OrdinalIgnoreCase) || photo.Length > 4 * 1024 * 1024)
-        {
-            TempData["Error"] = "Profile photo must be a JPG, PNG or WEBP image under 4 MB.";
-            return RedirectToAction(nameof(Edit), new { id });
-        }
-
-        await using var stream = photo.OpenReadStream();
+        await using var stream = photo!.OpenReadStream();
         var stored = await _storage.SaveAsync(stream, photo.FileName, ct);
         await _employees.UpdatePhotoAsync(id, stored, ct);
         TempData["Success"] = "Profile photo updated.";
@@ -217,8 +204,26 @@ public class EmployeesController : Controller
     {
         var employee = await _employees.GetByIdAsync(id, ct);
         if (employee?.ProfilePhotoPath is null) return NotFound();
+        if (!CanViewEmployee(employee)) return Forbid();
         if (!_storage.Exists(employee.ProfilePhotoPath)) return NotFound();
-        return File(_storage.OpenRead(employee.ProfilePhotoPath), "image/jpeg");
+
+        var contentType = Path.GetExtension(employee.ProfilePhotoPath).ToLowerInvariant() switch
+        {
+            ".png" => "image/png",
+            ".webp" => "image/webp",
+            _ => "image/jpeg"
+        };
+
+        return File(_storage.OpenRead(employee.ProfilePhotoPath), contentType);
+    }
+
+    private bool IsStaff => User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.HrManager);
+
+    private bool CanViewEmployee(EmployeeDetailDto employee)
+    {
+        if (IsStaff) return true;
+        if (_currentUser.EmployeeId == employee.Id) return true;
+        return employee.ManagerId.HasValue && employee.ManagerId == _currentUser.EmployeeId;
     }
 
     private async Task PopulateAsync(EmployeeFormViewModel model, int? excludeId, CancellationToken ct)
