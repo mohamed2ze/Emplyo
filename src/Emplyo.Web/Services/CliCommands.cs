@@ -74,6 +74,19 @@ public static class CliCommands
 
     private static async Task<int> SeedDevDataAsync(WebApplication app, string[] args)
     {
+        var allowNonDevelopment = string.Equals(
+            Environment.GetEnvironmentVariable("EMPLYO_ALLOW_DEV_SEED"),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+
+        if (!app.Environment.IsDevelopment() && !allowNonDevelopment)
+        {
+            Console.Error.WriteLine(
+                "Refusing to seed fictional development data outside Development. " +
+                "Set EMPLYO_ALLOW_DEV_SEED=true only for an isolated non-production environment.");
+            return 1;
+        }
+
         var password = GetOption(args, "--password")
             ?? Environment.GetEnvironmentVariable("EMPLYO_DEV_PASSWORD");
 

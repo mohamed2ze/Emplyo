@@ -52,8 +52,18 @@ public class CliCommandTests
         Assert.Contains("Administrator email and password are required", result.Error);
     }
 
+    [Fact]
+    public async Task Seed_dev_data_is_refused_in_production()
+    {
+        var result = await RunAsync("seed-dev-data", devPassword: "DevSeed!Pass2026", environment: "Production");
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("Refusing to seed fictional development data", result.Error);
+    }
+
     private async Task<(int ExitCode, string Output, string Error)> RunAsync(string command,
-        string? adminEmail = null, string? adminPassword = null, string? devPassword = null)
+        string? adminEmail = null, string? adminPassword = null, string? devPassword = null,
+        string environment = "Development")
     {
         var repoRoot = FindRepositoryRoot();
         var webProject = Path.Combine(repoRoot, "src", "Emplyo.Web");
@@ -79,7 +89,7 @@ public class CliCommandTests
         startInfo.ArgumentList.Add("--");
         startInfo.ArgumentList.Add(command);
         startInfo.Environment["ConnectionStrings__DefaultConnection"] = _factory.ConnectionString;
-        startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+        startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = environment;
         startInfo.Environment["EMPLYO_ADMIN_EMAIL"] = adminEmail;
         startInfo.Environment["EMPLYO_ADMIN_PASSWORD"] = adminPassword;
         startInfo.Environment["EMPLYO_DEV_PASSWORD"] = devPassword;

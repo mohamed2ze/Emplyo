@@ -21,7 +21,8 @@ EMPLYO_DEV_PASSWORD='Emplyo!Dev2026' \
   dotnet run --project src/Emplyo.Web -- seed-dev-data
 ```
 
-The seed is **idempotent** (running it again does not duplicate records).
+The seed is **idempotent** (running it again does not duplicate records) and is
+refused unless the application environment is `Development`.
 
 ## 2. Demo accounts
 
