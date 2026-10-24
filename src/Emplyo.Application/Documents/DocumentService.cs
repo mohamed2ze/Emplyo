@@ -23,6 +23,20 @@ public class DocumentService : IDocumentService
         "image/png", "image/jpeg", "text/plain", "text/csv", "application/octet-stream"
     };
 
+    private static readonly Dictionary<string, string> ContentTypesByExtension = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [".pdf"] = "application/pdf",
+        [".doc"] = "application/msword",
+        [".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        [".xls"] = "application/vnd.ms-excel",
+        [".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        [".png"] = "image/png",
+        [".jpg"] = "image/jpeg",
+        [".jpeg"] = "image/jpeg",
+        [".txt"] = "text/plain",
+        [".csv"] = "text/csv"
+    };
+
     private readonly IApplicationDbContext _db;
     private readonly IFileStorageService _storage;
     private readonly IAuditService _audit;
@@ -82,16 +96,28 @@ public class DocumentService : IDocumentService
         if (!string.IsNullOrEmpty(request.ContentType) && !AllowedContentTypes.Contains(request.ContentType))
             throw new BusinessRuleException("The file content type is not allowed.");
 
+        var title = request.Title.Trim();
+        if (title.Length > 200)
+            throw new BusinessRuleException("Document title must be 200 characters or fewer.");
+
+        var originalFileName = Path.GetFileName(request.OriginalFileName);
+        if (originalFileName.Length > 300)
+            throw new BusinessRuleException("The file name is too long.");
+
+        var contentType = ContentTypesByExtension.TryGetValue(extension, out var mappedContentType)
+            ? mappedContentType
+            : "application/octet-stream";
+
         var storedName = await _storage.SaveAsync(request.Content, request.OriginalFileName, ct);
 
         var document = new EmployeeDocument
         {
             EmployeeId = request.EmployeeId,
-            Title = request.Title.Trim(),
+            Title = title,
             Category = request.Category,
             StoredFileName = storedName,
-            OriginalFileName = Path.GetFileName(request.OriginalFileName),
-            ContentType = string.IsNullOrEmpty(request.ContentType) ? "application/octet-stream" : request.ContentType,
+            OriginalFileName = originalFileName,
+            ContentType = contentType,
             SizeBytes = request.SizeBytes,
             ExpirationDate = request.ExpirationDate,
             IsConfidential = request.IsConfidential,

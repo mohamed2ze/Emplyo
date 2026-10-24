@@ -114,7 +114,7 @@ public class DocumentServiceTests
     }
 
     [Fact]
-    public async Task Upload_defaults_a_blank_content_type_to_octet_stream()
+    public async Task Upload_derives_the_content_type_from_the_extension()
     {
         using var db = TestDb.Create();
         var employee = await Seed.EmployeeAsync(db);
@@ -122,7 +122,7 @@ public class DocumentServiceTests
         var id = await Create(db, new FakeFileStorage()).UploadAsync(
             ValidRequest(employee.Id, "notes.txt", contentType: ""), "u1", "User");
 
-        Assert.Equal("application/octet-stream", (await db.EmployeeDocuments.FindAsync(id))!.ContentType);
+        Assert.Equal("text/plain", (await db.EmployeeDocuments.FindAsync(id))!.ContentType);
     }
 
     [Fact]

@@ -25,7 +25,8 @@ public class FileStorageService : IFileStorageService
     public async Task<string> SaveAsync(Stream content, string originalFileName, CancellationToken ct = default)
     {
         var extension = Path.GetExtension(originalFileName);
-        if (extension.Length > 10) extension = extension[..10];
+        if (extension.Length > 10 || extension.Any(c => !char.IsLetterOrDigit(c) && c != '.'))
+            extension = string.Empty;
 
         var storedName = $"{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
         var fullPath = Path.Combine(RootPath, storedName);
