@@ -11,6 +11,7 @@ detail you need.
 | [PROJECT-STRUCTURE.md](PROJECT-STRUCTURE.md) | Repository map: what lives where, where new code belongs, naming conventions |
 | [DATABASE.md](DATABASE.md) | Schema, relationships, migrations, initialization rules |
 | [SECURITY.md](SECURITY.md) | Authentication, authorization, validation, audit, secrets handling |
+| [security/SECURITY_AUDIT.md](security/SECURITY_AUDIT.md) | Evidence-based security audit: findings, fixes, tests, residual risks |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Native and container deployment, configuration, hardening checklist |
 | [DESIGN.md](DESIGN.md) | UI/UX design system: colors, typography, spacing, components, appearance rules |
 | [DEMO.md](DEMO.md) | Fictional demo data inventory and presentation walkthrough |

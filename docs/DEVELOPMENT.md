@@ -96,7 +96,10 @@ are missing, so deployment or automation jobs fail visibly instead of silently.
   and real SQL Server constraints. They are isolated and repeatable and never touch
   the application database. They also verify resource-based authorization,
   announcement audience enforcement, confidential-document download rules, CSRF
-  rejection, account lockout, safe error redirects, and CSV export safety.
+  rejection, account lockout, safe error redirects, security headers, photo and
+  document authorization, password-reset host-header handling and enumeration
+  resistance, authentication rate limiting, session invalidation after role
+  changes, production-safe demo seeding, and CSV export safety.
 - **Browser smoke tests** (`Emplyo.E2ETests`) launch the real application on Kestrel
   and drive Chromium through Playwright. The fixture migrates and seeds a dedicated
   **`Emplyo_E2E`** database derived from the configured test connection, then covers
@@ -123,10 +126,12 @@ container on `localhost:1433`):
 | Check | Result |
 | --- | --- |
 | `dotnet build` | Succeeded — 0 warnings, 0 errors |
-| `dotnet test tests/Emplyo.UnitTests` | **228 passed**, 0 failed |
-| `dotnet test tests/Emplyo.IntegrationTests` | **80 passed**, 0 failed |
+| `dotnet build -c Release` | Succeeded — 0 warnings, 0 errors |
+| `dotnet test tests/Emplyo.UnitTests` | **239 passed**, 0 failed |
+| `dotnet test tests/Emplyo.IntegrationTests` | **90 passed**, 0 failed |
 | `dotnet test tests/Emplyo.E2ETests` | **7 passed**, 0 failed |
-| Coverage gate (unit + integration, union) | 58.0% lines, 64.0% branches |
+| Coverage gate (unit + integration, union) | 59.59% lines, 68.50% branches |
+| `dotnet list Emplyo.sln package --vulnerable --include-transitive` | No vulnerable packages reported |
 | `InitialCreate` migration applied to SQL Server | Succeeded |
 | `seed-dev-data` | Departments, positions, employees, leave types, holidays, attendance, announcements, demo users |
 | App startup + `GET /health` | `200` |

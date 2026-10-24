@@ -93,8 +93,9 @@ The composition root and presentation layer.
 | `Controllers/` | One controller per feature area (thin; delegate to Application services) |
 | `Views/` | `Views/<Controller>/<Action>.cshtml` + `Views/Shared/` partials/layouts |
 | `ViewModels/` | Strongly typed form/view models for complex pages (entities are never bound directly) |
-| `Services/` | HTTP-specific services: `CurrentUserService`, `TimeZoneProvider`, `Csv`, `Ui`, `CliCommands`, `ApplicationUserClaimsPrincipalFactory` |
+| `Services/` | HTTP-specific services: `CurrentUserService`, `TimeZoneProvider`, `Csv`, `Ui`, `ImageUploads`, `CliCommands`, `ApplicationUserClaimsPrincipalFactory` |
 | `Authorization/` | `Roles` and `Policies` constants |
+| `Security/` | Security-headers middleware (CSP, nosniff, framing, cache/referrer policy) |
 | `Filters/` | `DomainExceptionFilter` (domain exceptions → friendly responses) |
 | `HealthChecks/` | `DatabaseHealthCheck` (`GET /health`) |
 | `wwwroot/` | `css/emplyo.css`, `js/emplyo.js`, `img/`, `lib/` |

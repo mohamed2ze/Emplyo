@@ -81,11 +81,18 @@ Business workflows live in cohesive services grouped by module:
 
 ## Request pipeline
 
-1. `UseExceptionHandler` (production) / `UseDeveloperExceptionPage` (development).
+1. `UseForwardedHeaders` (trusted proxies only) and
+   `UseExceptionHandler` (production) / `UseDeveloperExceptionPage` (development).
 2. `UseStatusCodePagesWithReExecute` → friendly status pages.
-3. `UseStaticFiles`, `UseRouting`, `UseAuthentication`, `UseAuthorization`.
+3. `UseStaticFiles`, security-headers middleware, `UseRouting`,
+   `UseRateLimiter`, `UseAuthentication`, `UseAuthorization`.
 4. MVC with global `AutoValidateAntiforgeryToken` and `DomainExceptionFilter`.
 5. `MapHealthChecks("/health")` → custom `DatabaseHealthCheck`.
+
+Security-headers middleware adds CSP, `nosniff`, frame denial, referrer and
+permissions policy, and `no-store`/`no-referrer` for sensitive pages. The rate
+limiter protects the anonymous authentication POST endpoints by client IP. See
+[SECURITY.md](SECURITY.md).
 
 ## Extensibility
 

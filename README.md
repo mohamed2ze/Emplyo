@@ -170,6 +170,11 @@ Do not use `sa` in production. No credentials are stored in source control.
 | --- | --- | --- |
 | `ConnectionStrings:DefaultConnection` | SQL Server connection string | *(required)* |
 | `Storage:DocumentsRoot` | Private document/upload root (outside web root) | `<content-root>/App_Data/documents` |
+| `App:PublicBaseUrl` | Absolute public HTTPS URL used in password-reset links (required in production when email is enabled) | *(empty)* |
+| `Security:AuthRateLimitPerMinute` | Per-IP limit for login/reset POSTs | `30` |
+| `Security:SecurityStampValidationMinutes` | How often existing sessions revalidate role/activation changes | `5` |
+| `Security:KnownProxies` | Trusted reverse-proxy addresses for forwarded headers | loopback only |
+| `AllowedHosts` | Host-header allow list enforced by ASP.NET Core | `localhost;127.0.0.1` (set production host names) |
 | `Email:Enabled` | Enable SMTP delivery of notification email | `false` |
 | `Email:Host` / `Port` / `UseSsl` / `FromAddress` / `FromName` | SMTP configuration | — |
 
@@ -346,11 +351,12 @@ only control. See [`docs/SECURITY.md`](docs/SECURITY.md).
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the full verification log.
 Summary of the verified build/test state:
 
-- `dotnet build` — **succeeded, 0 warnings, 0 errors**.
-- `dotnet test tests/Emplyo.UnitTests` — **228 passed**.
-- `dotnet test tests/Emplyo.IntegrationTests` — **80 passed** (real SQL Server).
+- `dotnet build` (Debug and Release) — **succeeded, 0 warnings, 0 errors**.
+- `dotnet test tests/Emplyo.UnitTests` — **239 passed**.
+- `dotnet test tests/Emplyo.IntegrationTests` — **90 passed** (real SQL Server).
 - `dotnet test tests/Emplyo.E2ETests` — **7 passed** (real Chromium).
-- Combined unit + integration coverage (union) — **58.0% lines, 64.0% branches** (enforced by `./scripts/coverage.sh`).
+- Combined unit + integration coverage (union) — **59.59% lines, 68.50% branches** (enforced by `./scripts/coverage.sh`).
+- `dotnet list Emplyo.sln package --vulnerable --include-transitive` — no vulnerable packages reported.
 - Manual HTTP checks: login/logout, role-based access enforcement, employee
   creation, duplicate rejection, attendance clock in/out, leave submission and
   approval with balance deduction, cross-employee access denial, and CSV export.
@@ -360,15 +366,27 @@ Summary of the verified build/test state:
 ## Security notes
 
 - ASP.NET Core Identity with a 12+ character password policy, lockout after 5
-  failed attempts, and secure cookies.
+  failed attempts, generic failure messages, and secure cookies.
+- Per-IP rate limiting on login, forgot-password, and reset-password POSTs.
+- Password-reset links use a configured public HTTPS base URL, not the request
+  Host header; reset responses do not reveal whether an account exists.
 - Global CSRF protection (auto-validated antiforgery token on unsafe verbs).
-- Resource-based authorization for employee, leave, attendance, and document access.
-- Documents stored outside the web root with server-generated filenames; every
-  download is authorized.
+- Resource-based authorization for employee details/photos, leave, attendance,
+  and document access.
+- Security headers: CSP, nosniff, frame denial, referrer and permissions policy;
+  sensitive pages are `no-store`.
+- Documents stored outside the web root with server-generated filenames; content
+  types are server-derived; every download is authorized.
+- Profile photos validated by extension and file signature.
 - CSV exports protect against spreadsheet formula injection.
 - Audit logging excludes passwords and tokens.
+- Role, activation, and employee-link changes invalidate sessions through the
+  Identity security stamp (5-minute revalidation by default).
+- The last active administrator cannot be removed or deactivated.
+- Demo data seeding is refused outside Development.
 - Secrets are kept in User Secrets / environment variables, never in source.
-- HTTPS/HSTS enforced outside Development.
+- HTTPS/HSTS enforced outside Development; forwarded headers are trusted only
+  from configured proxies.
 
 ## Deployment
 
@@ -382,6 +400,12 @@ and Data Protection keys in named volumes.
 
 - Email delivery is optional and disabled by default; password-reset emails are
   suppressed when it is disabled (admin-driven reset is available).
+- Multi-factor authentication is not implemented.
+- Authentication rate limiting uses the directly observed client IP; configure
+  `Security:KnownProxies` (or edge rate limits) when behind a reverse proxy.
+- No SAST/DAST or container-image scanning is configured; NuGet dependency
+  auditing is configured in CI. See
+  [`docs/security/SECURITY_AUDIT.md`](docs/security/SECURITY_AUDIT.md).
 - Leave policy is configurable but does not encode any specific jurisdiction's
   employment law — review policies for your jurisdiction.
 - No malware scanning is implemented for uploads (documented, not claimed).
@@ -399,6 +423,7 @@ All documentation is indexed in [`docs/README.md`](docs/README.md).
 - [`docs/PROJECT-STRUCTURE.md`](docs/PROJECT-STRUCTURE.md) — repository map and where new code belongs
 - [`docs/DATABASE.md`](docs/DATABASE.md)
 - [`docs/SECURITY.md`](docs/SECURITY.md)
+- [`docs/security/SECURITY_AUDIT.md`](docs/security/SECURITY_AUDIT.md) — security audit report
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 - [`docs/DESIGN.md`](docs/DESIGN.md) — UI/UX design system implemented by the web app
 - [`docs/DEMO.md`](docs/DEMO.md) — fictional demo data and presentation walkthrough

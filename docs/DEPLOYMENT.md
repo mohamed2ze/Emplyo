@@ -16,7 +16,9 @@ Provide configuration through environment variables (do not commit secrets):
 
 ```bash
 export ASPNETCORE_ENVIRONMENT=Production
-export ConnectionStrings__DefaultConnection="Server=<host>,1433;Database=Emplyo;User Id=<user>;Password=<pw>;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True"
+export ConnectionStrings__DefaultConnection="Server=<host>,1433;Database=Emplyo;User Id=<user>;Password=<pw>;Encrypt=True;TrustServerCertificate=False;MultipleActiveResultSets=True"
+export AllowedHosts="emplyo.yourcompany.com"
+export App__PublicBaseUrl="https://emplyo.yourcompany.com"
 export Storage__DocumentsRoot="/var/lib/emplyo/documents"
 export Email__Enabled="true"
 export Email__Host="smtp.yourcompany.com"
@@ -28,8 +30,36 @@ export Email__FromAddress="no-reply@yourcompany.com"
 export Email__FromName="Emplyo"
 ```
 
+`App__PublicBaseUrl` is required when email is enabled: password-reset links are
+built from it rather than from the request `Host` header. It must be an absolute
+HTTPS URL (optionally with a path prefix) and must match `AllowedHosts`.
+
+`TrustServerCertificate=False` requires a SQL Server certificate trusted by the
+host. Use `TrustServerCertificate=True` only for local/self-signed development
+instances; it disables certificate validation on the database connection.
+
 Set the application's organization settings (name, time zone, work-day start)
 from the **Settings** page after the administrator has signed in.
+
+### Reverse proxy and client IPs
+
+The application honors `X-Forwarded-For` / `X-Forwarded-Proto` only from trusted
+proxies. Loopback proxies are trusted by default. If the proxy connects from
+another address (for example a Docker bridge gateway), add it explicitly:
+
+```bash
+export Security__KnownProxies__0="172.18.0.1"
+```
+
+Without this, forwarded headers are ignored (safe default), but HTTPS redirects
+and per-IP authentication rate limiting may not behave as intended behind the
+proxy. Configure the proxy to overwrite forwarding headers rather than append
+untrusted client values.
+
+Authentication rate limiting defaults to 30 requests per minute per client IP for
+login, forgot-password, and reset-password. Tune it with
+`Security__AuthRateLimitPerMinute`. Account lockout is independent and remains
+enabled.
 
 ## Database preparation
 
@@ -41,6 +71,9 @@ dotnet run --project src/Emplyo.Web -- migrate
 EMPLYO_ADMIN_EMAIL="admin@yourcompany.com" EMPLYO_ADMIN_PASSWORD="<strong-pw>" \
   dotnet run --project src/Emplyo.Web -- seed-admin
 ```
+
+`seed-dev-data` is refused unless `ASPNETCORE_ENVIRONMENT=Development`. Do not
+set `EMPLYO_ALLOW_DEV_SEED=true` in production.
 
 Recommended production database permissions (least privilege): a dedicated login
 with `db_ddladmin` + `db_datareader` + `db_datawriter` on the `Emplyo` database
@@ -80,8 +113,12 @@ The provided compose file runs only the web container and reaches SQL Server via
 `host.docker.internal`:
 
 ```bash
-EMPLYO_DB_PASSWORD='<pw>' docker compose up --build
+EMPLYO_DB_PASSWORD='<pw>' EMPLYO_ALLOWED_HOSTS='emplyo.example.com' \
+  EMPLYO_PUBLIC_BASE_URL='https://emplyo.example.com' docker compose up --build
 ```
+
+The compose defaults allow only `localhost;127.0.0.1`. Set
+`EMPLYO_ALLOWED_HOSTS` whenever clients use another host name or IP.
 
 The application listens on `http://localhost:8080` in the container. The compose
 file intentionally does **not** define SQL Server, to avoid conflicting with your
@@ -91,6 +128,8 @@ block for environments that truly need one.
 The image is hardened by default:
 
 - It runs as the unprivileged `app` user (UID `1654`), not root.
+- The compose service drops all Linux capabilities and sets
+  `no-new-privileges`.
 - A Docker `HEALTHCHECK` polls `GET /health`; `docker compose ps` reports the
   container as `healthy` or `unhealthy`.
 - Uploaded documents and Data Protection keys are kept in the named volumes
@@ -143,6 +182,9 @@ through your orchestrator's secret mechanism.
 
 - [ ] `ASPNETCORE_ENVIRONMENT=Production` (enables HTTPS redirection + HSTS).
 - [ ] TLS terminated at the proxy or the host.
+- [ ] `AllowedHosts` restricted to the real host name(s).
+- [ ] `App__PublicBaseUrl` set to the public HTTPS URL when email is enabled.
+- [ ] Trusted proxies configured if the reverse proxy is not on loopback.
 - [ ] Dedicated least-privilege database login (no `sa`).
 - [ ] Secrets provided via environment variables or a secret manager.
 - [ ] Persistent volume for `Storage__DocumentsRoot`, backed up with the database.
